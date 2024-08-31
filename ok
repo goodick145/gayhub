@@ -4,10 +4,10 @@
     This script updates a lot, Use this loadstring to be in the latest version:
 
     getgenv().ToggleUI = "J"-- //  Key Toggle "J" set by default however you can change it.
-    getgenv().ProjectNova = "https://raw.githubusercontent.com/goodick145/gayhub/main/ok";
+    getgenv().GayHub = "https://raw.githubusercontent.com/goodick145/gayhub/main/ok";
 
     pcall(function()
-        loadstring(game:HttpGet(getgenv().ProjectNova))();
+        loadstring(game:HttpGet(getgenv().GayHub))();
     end)
 ]]-----------------------------------------------------------------------------------------------------
 
@@ -607,7 +607,7 @@ end)
 FightingTab.newToggle("Auto Dodge Players (Very Overpowered)","",false,function(Value)
     getgenv().AutoDodging = Value
 
-    local DashAnims = {NormalDash = {17222639634},WeaponDash = {17018570177},DiDash = {17106336561},DashDash = {17106175415},
+    local DashAnims = {NormalDash = {17222639634},WeaponDash = {17018570177},DiDash = {17106336561},DashDash = {17106175415}},
 
     local SaitamaAnims = {
         NormalPunch = {17323086195,93604616931825};
