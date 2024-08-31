@@ -1,0 +1,20 @@
+getgenv().AutoOneShotting = true
+
+task.spawn(function()
+    local connection
+    connection = game:GetService("RunService").RenderStepped:Connect(function()
+        if getgenv().AutoOneShotting == true then
+            pcall(function()
+                for _,k in ipairs(workspace.Living:GetChildren()) do
+                    if k:IsA("Model") and k:FindFirstChild("Head") and k.Head:IsA("Part") and k.Head.Name == "Head" and k.Head ~= game.Players.LocalPlayer.Character.Head then
+                        if (k.Head.Position - game.Players.LocalPlayer.Character.Head.Position).magnitude <= 35 then
+                            if k:FindFirstChildOfClass("Humanoid").Health ~= k:FindFirstChildOfClass("Humanoid").MaxHealth then k:FindFirstChildOfClass("Humanoid").Health = 0;end
+                        end
+                    end
+                end
+            end)
+        else
+            connection:Disconnect();
+        end
+    end)
+end)
