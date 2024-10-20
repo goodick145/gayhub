@@ -47,6 +47,11 @@ local function autoEquipItems()
                     ["Divine"] = true,
                     ["Heavy"] = true,
                     ["Reinforced"] = true,
+                    ["quality"] = true,
+                    ["Blessed"] = true,
+                    ["Firn"] = true,
+                    ["Secure"] = true,
+                    ["Flawless"] = true,
                     ["Conqueror's"] = true
                 }
 
