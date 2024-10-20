@@ -1,0 +1,72 @@
+-- auto equip
+getgenv().Setting = {
+    ["AutoEquipItem"] = true,
+    ["EquipDelay"] = 0.5 
+}
+
+-- Hàm kiểm tra các item trong backpack và tự động trang bị tất cả item phù hợp tuần tự
+local function autoEquipItems()
+    if not getgenv().Setting["AutoEquipItem"] then
+        print("AutoEquipItem K hd")
+        return
+    end
+
+    local backpack = game.Players.LocalPlayer:WaitForChild("Backpack")
+    local character = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    if not humanoid then
+        print("Không tìm thấy Humanoid.")
+        return
+    end
+
+    local equippedItems = {}
+
+    for _, item in pairs(backpack:GetChildren()) do
+        if item:IsA("Tool") and item:FindFirstChild("BagPart") then
+            local rarity = item.BagPart.Overhead:FindFirstChild("Rarity")
+            local enchant = item.BagPart.Overhead:FindFirstChild("Enchantment")
+
+            if rarity and enchant then
+                local rarityText = rarity.Text
+                local enchantText = enchant.Text
+
+                local validRarities = {
+                    ["Unobtainable/Legendary"] = true,
+                    ["Unobtainable/Mythical"] = true,
+                    ["Mythical"] = true,
+                    ["Legendary"] = true
+                }
+
+                local validEnchants = {
+                    ["Mythical"] = true,
+                    ["Arcane"] = true,
+                    ["Heroic"] = true,
+                    ["Steady"] = true,
+                    ["Mighty"] = true,
+                    ["Divine"] = true,
+                    ["Heavy"] = true,
+                    ["Reinforced"] = true,
+                    ["Conqueror's"] = true
+                }
+
+                if validRarities[rarityText] and validEnchants[enchantText] then
+                    table.insert(equippedItems, item)
+                end
+            end
+        end
+    end
+
+    if #equippedItems > 0 then
+        for _, item in ipairs(equippedItems) do
+            print("Đang trang bị item phù hợp: " .. item.Name)
+            humanoid:EquipTool(item) -- Trang bị item vào nhân vật
+            wait(getgenv().Setting["EquipDelay"]) -- Thời gian trễ giữa mỗi lần trang bị
+        end
+        print("da trang bi item.")
+    else
+        print("k thay.")
+    end
+end
+
+autoEquipItems()
