@@ -35,7 +35,7 @@ local function autoEquipItems()
                     ["Unobtainable/Legendary"] = true,
                     ["Unobtainable/Mythical"] = true,
                     ["Mythical"] = true,
-                    ["Legendary"] = true
+                    ["Legendary"] = false
                 }
 
                 local validEnchants = {
