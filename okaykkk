@@ -96,6 +96,8 @@ local function useDragonballs()
     local args = {[1] = "ItemStorage6"}
     game:GetService("ReplicatedStorage").RemoteEvents.ItemStorageRemote:FireServer(unpack(args))
 
+    task.wait(1)
+
     local tool = player.Backpack:FindFirstChild("Seven Star Dragonball")
     if tool then player.Character.Humanoid:EquipTool(tool) end
     game:GetService("ReplicatedStorage").RemoteEvents.ItemRemote:FireServer()
