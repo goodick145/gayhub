@@ -137,7 +137,7 @@ end)
 local function waitForSpecChange(old)
 	local specVal = Player:FindFirstChild("PlayerValues") and Player.PlayerValues:FindFirstChild("Specialization")
 	if not specVal then return "" end
-	local timeout = 2
+	local timeout = 0.5
 	local t = 0
 	while specVal.Value == old and t < timeout do
 		task.wait(0.05)
