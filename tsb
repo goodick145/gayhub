@@ -467,9 +467,9 @@ tab2.newToggle("Auto Dodge", "Ok", false, function(value)
 		getgenv().AutoDodging = false;
 	end
 end);
---// Auto Block Toggle (replace toàn bộ logic cũ)
+-- biến connection toàn cục
 local AutoCounterTPConnection
-tab2.newToggle("Anti Death Counter", "Death Counter Tuoi Gi", false, function(value)
+tab2.newToggle("Anti Counter TP", "Tự động né người có Counter gần bạn", false, function(value)
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
@@ -486,7 +486,7 @@ tab2.newToggle("Anti Death Counter", "Death Counter Tuoi Gi", false, function(va
                 local accessory = plr.Character:FindFirstChild("Counter")
                 if accessory and accessory:IsA("Accessory") then
                     local dist = (hrp.Position - myPos).Magnitude
-                    if dist <= 50 then
+                    if dist <= 20 then
                         return plr
                     end
                 end
@@ -527,7 +527,7 @@ end)
 --// Auto Block Toggle (replace toàn bộ logic cũ)
 -- đặt ở ngoài để giữ được reference
 local AutoBlockConnection
-tab2.newToggle("Auto Block", "Not Bad", false, function(value)
+tab2.newToggle("Auto Block", "May Not Work", false, function(value)
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
@@ -609,6 +609,28 @@ tab2.newToggle("Auto Block", "Not Bad", false, function(value)
         end
         Unblock()
     end
+end)
+tab2.newToggle("No Slow", "Enable Super Speed for better performance.", false, function(value)
+	getgenv().AutoNoSlow = value;
+	local function SetWalkSpeed(speed)
+		local playerChar = game.Players.LocalPlayer.Character;
+		if (playerChar and playerChar:FindFirstChild("Humanoid")) then
+			playerChar.Humanoid.WalkSpeed = speed;
+		end
+	end
+	local connection;
+	task.spawn(function()
+		connection = game:GetService("RunService").RenderStepped:Connect(function()
+			if getgenv().AutoNoSlow then
+				pcall(function()
+					SetWalkSpeed(25);
+				end);
+			else
+				connection:Disconnect();
+			end
+		end);
+	end);
+end);
 tab2.newToggle("Aim Nearest Player", "Ngu Moi Bat", false, function(value)
 	getgenv().AutoAimlocking = value;
 	local connection;
@@ -787,7 +809,7 @@ game.Players.PlayerRemoving:Connect(function()
 	refreshDropdown();
 end);
 -- Label hướng dẫn
-tab3.newLabel("Select Character", "Chac Cung Deo Ai Dung");
+tab3.newLabel("Select Character", "Chọn Nhân Vật");
 
 -- Danh sách nhân vật từ SimpleSpy
 local characterOptions = {
@@ -1179,7 +1201,7 @@ tab3.newInput("Target Player", "Nhập tên player để ghim (không nhập = r
 end)
 
 -- Toggle script
-tab3.newToggle("Auto Trashcan Farming", "Bật/tắt script tự động", false, function(state)
+tab3.newToggle("Auto TP Trashcan & Player Click", "Bật/tắt script tự động", false, function(state)
     running = state
     if running then
         task.spawn(doAction)
