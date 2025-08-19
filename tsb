@@ -1,0 +1,1791 @@
+getgenv().Configurations = function()
+	pcall(function()
+		getgenv().EspPlayers = false;
+	end);
+end;
+getgenv().Configurations();
+local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))();
+local window = DrRayLibrary:Load("GayHub x Eogibiti", "Default");
+local tab1 = DrRayLibrary.newTab("💡Misc", "http://www.roblox.com/asset/?id=118478174443435");
+local tab2 = DrRayLibrary.newTab("🥊Pvp", "ImageIdHere");
+local tab3 = DrRayLibrary.newTab("👨‍🌾 Farming", "ImageIdHere");
+local tab4 = DrRayLibrary.newTab("👽 Teleport", "ImageIdHere");
+local tab5 = DrRayLibrary.newTab(" 🤡 Troll", "ImageIdHere");
+local tab6 = DrRayLibrary.newTab("Troll", "ImageIdHere");
+tab1.newLabel("Player Functions🩸");
+tab1.newToggle("ESP Player", "Toggle ESP for players", false, function(value)
+	getgenv().EspPlayers = value;
+	print("ESP Players: " .. tostring(getgenv().EspPlayers));
+	local Folder = workspace.Live;
+	local function CreateBilboard(playerModel)
+		local Head = playerModel:FindFirstChild("Head");
+		if not Head then
+			return;
+		end
+		local BillboardGui = Instance.new("BillboardGui");
+		local TextLabel = Instance.new("TextLabel");
+		BillboardGui.Parent = Head;
+		BillboardGui.AlwaysOnTop = true;
+		BillboardGui.Size = UDim2.new(0, 100, 0, 50);
+		BillboardGui.StudsOffset = Vector3.new(0, 2, 0);
+		TextLabel.Parent = BillboardGui;
+		TextLabel.BackgroundColor3 = Color3.new(1, 1, 1);
+		TextLabel.BackgroundTransparency = 1;
+		TextLabel.Size = UDim2.new(1, 0, 1, 0);
+		TextLabel.Text = playerModel.Name;
+		TextLabel.TextColor3 = Color3.fromRGB(255, 255, 0);
+		TextLabel.TextScaled = true;
+		TextLabel.Font = Enum.Font.GothamBold;
+		TextLabel.TextStrokeTransparency = 0;
+		TextLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0);
+		TextLabel.Visible = false;
+		return BillboardGui, TextLabel;
+	end
+	local function UseESP(playerModel)
+		local Head = playerModel:FindFirstChild("Head");
+		if not Head then
+			return;
+		end
+		local BillboardGui, TextLabel = CreateBilboard(playerModel);
+		local RenderSteppedCon;
+		local function DisconnectCons()
+			if BillboardGui then
+				BillboardGui:Destroy();
+			end
+			if RenderSteppedCon then
+				RenderSteppedCon:Disconnect();
+				RenderSteppedCon = nil;
+			end
+		end
+		RenderSteppedCon = game:GetService("RunService").RenderStepped:Connect(function()
+			local HeadPosition, HeadOnScreen = workspace.CurrentCamera:WorldToViewportPoint(Head.Position);
+			TextLabel.Visible = HeadOnScreen and getgenv().EspPlayers;
+		end);
+		playerModel.AncestryChanged:Connect(function(_, parent)
+			if not parent then
+				DisconnectCons();
+			end
+		end);
+	end
+	local function isPlayer(playerModel)
+		return game.Players:GetPlayerFromCharacter(playerModel) ~= nil;
+	end
+	local function XAdded(playerModel)
+		if (isPlayer(playerModel) and playerModel:IsA("Model") and playerModel:FindFirstChild("Head")) then
+			UseESP(playerModel);
+		end
+	end
+	for _, playerModel in ipairs(Folder:GetChildren()) do
+		if (isPlayer(playerModel) and playerModel:IsA("Model") and playerModel:FindFirstChild("Head")) then
+			XAdded(playerModel);
+		end
+	end
+	Folder.ChildAdded:Connect(function(newPlayer)
+		task.wait(0.5);
+		XAdded(newPlayer);
+	end);
+end);
+tab1.newToggle("Super Speed", "Nen Dung Neu Ban Qua Ga", false, function(value)
+	getgenv().WalkspeedBypass = value;
+	task.spawn(function()
+		while (getgenv().WalkspeedBypass == true) and game:GetService("Players").LocalPlayer do
+			pcall(function()
+				local chr = game:GetService("Players").LocalPlayer.Character;
+				if chr then
+					local hum = chr:FindFirstChildWhichIsA("Humanoid");
+					if (hum and hum.Parent) then
+						local hb = game:GetService("RunService").Heartbeat;
+						local delta = hb:Wait();
+						if (hum.MoveDirection.Magnitude > 0) then
+							chr:TranslateBy(hum.MoveDirection * 12 * delta * 10);
+						else
+							chr:TranslateBy(hum.MoveDirection * delta * 10);
+						end
+					end
+				end
+			end);
+			task.wait(0.0015);
+		end
+	end);
+end);
+tab1.newToggle("Super Jump", "Khong Nen Dung Lam", false, function(value)
+	getgenv().JumpPowerBypass = value;
+	task.spawn(function()
+		while getgenv().JumpPowerBypass == true do
+			pcall(function()
+				if (game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):GetState() == Enum.HumanoidStateType.Jumping) then
+					game.Players.LocalPlayer.Character.Humanoid.RootPart.CFrame = game.Players.LocalPlayer.Character.Humanoid.RootPart.CFrame * CFrame.new(0, 190, 0);
+				end
+			end);
+			task.wait(0.0015);
+		end
+	end);
+end);
+tab1.newToggle("Auto Return Safe Zone", "Khuyen Dung", false, function(value)
+	getgenv().AutoReturnSafeZone = value;
+	local X = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame;
+	local Teleported = false;
+	task.spawn(function()
+		while getgenv().AutoReturnSafeZone do
+			pcall(function()
+				local humanoid = workspace.Live[game.Players.LocalPlayer.Name]:FindFirstChild("Humanoid");
+				if humanoid then
+					if ((humanoid.Health < 45) and not Teleported) then
+						X = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame;
+						game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-294.9331359863281, 630.376708984375, -263.8604736328125);
+						Teleported = true;
+					elseif ((humanoid.Health == 75) and Teleported) then
+						game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = X;
+						Teleported = false;
+					end
+				end
+			end);
+			task.wait(0.15);
+		end
+	end);
+end);
+tab1.newToggle("Auto Awakening On Low HP", "Dung Bat Neu Da Bat Cai O Tren", false, function(value)
+	getgenv().AutoRunRemoteOnLowHP = value;
+	task.spawn(function()
+		while getgenv().AutoRunRemoteOnLowHP do
+			pcall(function()
+				local humanoid = workspace.Live[game.Players.LocalPlayer.Name]:FindFirstChild("Humanoid");
+				if (humanoid and (humanoid.Health < 30)) then
+					local args = {[1]={Goal="KeyPress",Key=Enum.KeyCode.G}};
+					game:GetService("Players").LocalPlayer.Character.Communicate:FireServer(unpack(args));
+					task.wait(0.111);
+				end
+			end);
+			task.wait(0.15);
+		end
+	end);
+end);
+tab1.newLabel("Sus👅");
+tab1.newToggle("Frick Dummy", "Sus", false, function(value)
+	getgenv().AutoFuckingGoku = value;
+	task.spawn(function()
+		if (getgenv().AutoFuckingGoku == true) then
+			local FuckAnimation = Instance.new("Animation");
+			FuckAnimation.AnimationId = "rbxassetid://148840371";
+			local k = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(FuckAnimation);
+			k:Play();
+			k:AdjustSpeed(6);
+		else
+			for i, v in ipairs((game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid") or game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("AnimationController")):GetPlayingAnimationTracks()) do
+				v:Stop();
+			end
+		end
+	end);
+	task.spawn(function()
+		if (getgenv().AutoFuckingGoku == true) then
+			local GahDamn = "http://www.roblox.com/asset/?id=8448213216";
+			local Sound1 = Instance.new("Sound");
+			Sound1.Name = "Sound1";
+			Sound1.SoundId = GahDamn;
+			Sound1.Volume = 10;
+			Sound1.Looped = false;
+			Sound1.Parent = game.Workspace;
+			Sound1:Play();
+			local Claps = "http://www.roblox.com/asset/?id=9114758204";
+			local Sound2 = Instance.new("Sound");
+			Sound2.Name = "Sound2";
+			Sound2.SoundId = Claps;
+			Sound2.Volume = 10;
+			Sound2.Looped = true;
+			Sound2.Parent = game.Workspace;
+			Sound2:Play();
+		else
+			for _, v in ipairs(workspace:GetChildren()) do
+				if v:IsA("Sound") then
+					v:Destroy();
+				end
+			end
+		end
+	end);
+	task.spawn(function()
+		while getgenv().AutoFuckingGoku == true do
+			pcall(function()
+				local Auddy = game.Workspace.Live["Weakest Dummy"];
+				game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Auddy.HumanoidRootPart.Position - (Auddy.HumanoidRootPart.CFrame.LookVector * 1), Auddy.HumanoidRootPart.Position);
+			end);
+			task.wait(0.25);
+		end
+	end);
+end);
+tab2.newLabel("Main Function❤️‍🔥");
+tab2.newToggle("M1ing Teleport", "Very OP", false, function(value)
+	getgenv().AutoTeleportPunching = value;
+	getgenv().DetectionDistance = 55;
+	getgenv().TeleportDistance = 5;
+	local LPlayer = game.Players.LocalPlayer;
+	local CRoot;
+	local function UpdateCRoot()
+		local LChar = LPlayer.Character;
+		if LChar then
+			CRoot = LChar:FindFirstChild("HumanoidRootPart");
+			if not CRoot then
+				LChar.ChildAdded:Wait();
+				CRoot = LChar:WaitForChild("HumanoidRootPart");
+			end
+		end
+	end
+	local function FindNearest()
+		local Dist = getgenv().DetectionDistance;
+		local NearestPlr = nil;
+		for _, v in pairs(game.Workspace.Live:GetChildren()) do
+			local Humanoid = v:FindFirstChildOfClass("Humanoid");
+			local HumanoidRoot = v:FindFirstChild("HumanoidRootPart");
+			if (Humanoid and HumanoidRoot and (v ~= LPlayer.Character)) then
+				if (Humanoid.Health > 0) then
+					local Mag = (CRoot.Position - HumanoidRoot.Position).magnitude;
+					if (Mag < Dist) then
+						Dist = Mag;
+						NearestPlr = HumanoidRoot;
+					end
+				end
+			end
+		end
+		return NearestPlr;
+	end
+	task.spawn(function()
+		while getgenv().AutoTeleportPunching == true do
+			pcall(function()
+				UpdateCRoot();
+				if workspace.Live[LPlayer.Name]:FindFirstChild("M1ing") then
+					if CRoot then
+						local Found = FindNearest();
+						if Found then
+							local Target = Found.Position - (Found.CFrame.LookVector * getgenv().TeleportDistance);
+							LPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Target, Target + (Found.Position - Target).unit));
+						end
+					end
+				end
+			end);
+			task.wait(0.015);
+		end
+	end);
+	LPlayer.CharacterAdded:Connect(function()
+		task.wait(3);
+		UpdateCRoot();
+	end);
+end);
+tab2.newToggle("Ultra Instinct", "Auto Dodge But V2", false, function(value)
+	getgenv().AutoDodging = value;
+	local teleportRadius = 18;
+	local teleportSpeed = 1;
+
+	-- Animation groups
+	local DashAnims = {
+		NormalDash = {7807831448, 10479335397, 13380255751, 13380255751},
+	};
+
+	local SaiAnims = {
+		Skill1 = {10468665991},
+		Skill2 = {10466974800},
+		Skill3 = {10471336737},
+		Skill4 = {12510170988},
+		SkillR = {7807831448},
+	};
+
+	local GaAnims = {
+		Skill1 = {14516273501},
+		Skill2 = {12272894215},
+		Skill3 = {7807831448},
+		Skill4 = {12296882427},
+		Skill5 = {12307656616},
+		SkillR = {12351854556}, -- baid
+	};
+
+	local CyAnims = {
+		Skill1 = {12534735382},
+		Skill2 = {7807831448},
+		Skill3 = {12502664044},
+		Skill4 = {7807831448},
+		Skill5 = {12509505723},
+		Skill6 = {12618271998},
+		Skill7 = {12684390285},
+		SkillR = {12684185971},
+	};
+
+	local NinAnims = {
+		Skill1 = {13376869471},
+		Skill2 = {13294790250},
+		Skill3 = {13376962659},
+		Skill4 = {13365849295},
+		SkillR = {13501296372},
+	};
+
+	local RunAnims = {
+		Run1 = {14003607057},
+		Run2 = {14004235777},
+		Run3 = {14046756619},
+		Run4 = {14048349132},
+		Run5 = {14299135500},
+		Run6 = {14967219354},
+		RunR = {14351441234},
+	};
+
+	local BladeAnims = {
+		Skill1 = {15290930205},
+		Skill2 = {15145462680},
+		Skill3 = {15295895753},
+		SkillR = {15311685628}, -- baid
+	};
+
+	local TatAnims = {
+		Skill1 = {16515850153},
+		Skill2 = {16139108718},
+		Skill3 = {16431491215},
+		Skill4 = {16597322398},
+	};
+
+	local RuiAnims = {
+		Skill1 = {17799224866},
+		Skill2 = {17838006839},
+		Skill3 = {17857788598},
+		Skill4 = {17857880283},
+		SkillR = {18179181663},
+	};
+
+	-- Collect all animations
+	local Animations = {};
+	for _, animationGroup in pairs({
+		DashAnims, SaiAnims, GaAnims, CyAnims,
+		NinAnims, RunAnims, BladeAnims, TatAnims, RuiAnims
+	}) do
+		for _, animationSet in pairs(animationGroup) do
+			for _, animationId in pairs(animationSet) do
+				table.insert(Animations, animationId);
+			end
+		end
+	end
+	if value then
+		task.spawn(function()
+			local connection;
+			local currentAngle = 0;
+			connection = game:GetService("RunService").RenderStepped:Connect(function()
+				if (getgenv().AutoDodging == true) then
+					pcall(function()
+						for _, enemy in ipairs(workspace.Live:GetChildren()) do
+							if (enemy:IsA("Model") and enemy:FindFirstChild("Head") and enemy.Head:IsA("Part") and (enemy.Head ~= game.Players.LocalPlayer.Character.Head)) then
+								if ((enemy.Head.Position - game.Players.LocalPlayer.Character.Head.Position).magnitude <= 12) then
+									local humanoid = enemy:FindFirstChildOfClass("Humanoid");
+									if (humanoid and (humanoid.Health > 0)) then
+										local IsUsingAttacks = false;
+										for _, animationTrack in pairs(humanoid:GetPlayingAnimationTracks()) do
+											if table.find(Animations, tonumber(animationTrack.Animation.AnimationId:match("%d+"))) then
+												IsUsingAttacks = true;
+												break;
+											end
+										end
+										if (enemy:FindFirstChild("M1ing") or IsUsingAttacks) then
+											local angle = math.rad(currentAngle);
+											local xOffset = math.cos(angle) * teleportRadius;
+											local zOffset = math.sin(angle) * teleportRadius;
+											local newPosition = enemy.Head.Position + Vector3.new(xOffset, 0, zOffset) + Vector3.new(0, 3, 0);
+											game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(newPosition, enemy.Head.Position);
+											currentAngle = (currentAngle + teleportSpeed) % 360;
+										end
+									end
+								end
+							end
+						end
+					end);
+				elseif connection then
+					connection:Disconnect();
+				end
+			end);
+		end);
+	end
+end);
+tab2.newToggle("Auto Dodge", "Ok", false, function(value)
+	getgenv().AutoDodging = value;
+	local teleportRadius = 20;
+
+	-- Danh sách ID mới
+	local DashAnims   = {7807831448,10479335397,13380255751,13380255751};
+	local SaiAnims    = {10468665991,10466974800,10471336737,12510170988,7807831448};
+	local GaAnims     = {14516273501,12272894215,7807831448,12296882427,12307656616,12351854556};
+	local CyAnims     = {12534735382,7807831448,12502664044,7807831448,12509505723,12618271998,12684390285,12684185971};
+	local NinAnims    = {13376869471,13294790250,13376962659,13365849295,13501296372};
+	local RunAnims    = {14003607057,14004235777,14046756619,14048349132,14299135500,14967219354,14351441234};
+	local BladeAnims  = {15290930205,15145462680,15295895753,15311685628};
+	local TatAnims    = {16515850153,16139108718,16431491215,16597322398};
+	local RuiAnims    = {17799224866,17838006839,17857788598,17857880283,18179181663};
+
+	-- Gom lại tất cả vào Animations
+	local Animations = {};
+	for _, animationGroup in pairs({
+		DashAnims, SaiAnims, GaAnims, CyAnims,
+		NinAnims, RunAnims, BladeAnims, TatAnims, RuiAnims
+	}) do
+		for _, animationId in pairs(animationGroup) do
+			table.insert(Animations, animationId);
+		end
+	end
+	if value then
+		task.spawn(function()
+			local connection;
+			connection = game:GetService("RunService").RenderStepped:Connect(function()
+				if getgenv().AutoDodging then
+					pcall(function()
+						local teleported = false;
+						for _, enemy in ipairs(workspace.Live:GetChildren()) do
+							if (enemy:IsA("Model") and enemy:FindFirstChild("Head") and enemy.Head:IsA("Part") and (enemy.Head ~= game.Players.LocalPlayer.Character.Head)) then
+								if ((enemy.Head.Position - game.Players.LocalPlayer.Character.Head.Position).magnitude <= 15) then
+									local humanoid = enemy:FindFirstChildOfClass("Humanoid");
+									if (humanoid and (humanoid.Health > 0)) then
+										local isUsingAttacks = false;
+										for _, animationTrack in pairs(humanoid:GetPlayingAnimationTracks()) do
+											if table.find(Animations, tonumber(animationTrack.Animation.AnimationId:match("%d+"))) then
+												isUsingAttacks = true;
+												break;
+											end
+										end
+										if (enemy:FindFirstChild("M1ing") or isUsingAttacks) then
+											if not teleported then
+												local randomOffset = Vector3.new((math.random() * 2 * teleportRadius) - teleportRadius, 0, (math.random() * 2 * teleportRadius) - teleportRadius);
+												local newPosition = enemy.Head.Position + randomOffset + Vector3.new(0, 3, 0);
+												game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(newPosition, enemy.Head.Position);
+												teleported = true;
+											end
+										end
+									end
+								end
+							end
+						end
+					end);
+				elseif connection then
+					connection:Disconnect();
+				end
+			end);
+		end);
+	else
+		if connection then
+			connection:Disconnect();
+		end
+		getgenv().AutoDodging = false;
+	end
+end);
+--// Auto Block Toggle (replace toàn bộ logic cũ)
+local AutoCounterTPConnection
+tab2.newToggle("Anti Death Counter", "Death Counter Tuoi Gi", false, function(value)
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+
+    -- Hàm tìm player có Counter trong phạm vi 20 studs
+    local function findNearbyCounterPlayer()
+        local myChar = LocalPlayer.Character
+        if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return nil end
+
+        local myPos = myChar.HumanoidRootPart.Position
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = plr.Character.HumanoidRootPart
+                local accessory = plr.Character:FindFirstChild("Counter")
+                if accessory and accessory:IsA("Accessory") then
+                    local dist = (hrp.Position - myPos).Magnitude
+                    if dist <= 50 then
+                        return plr
+                    end
+                end
+            end
+        end
+        return nil
+    end
+
+    local function handleTP()
+        local counterPlayer = findNearbyCounterPlayer()
+        if counterPlayer and counterPlayer.Character and counterPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local myChar = LocalPlayer.Character
+            local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
+            local targetHRP = counterPlayer.Character.HumanoidRootPart
+
+            if myHRP then
+                local dir = (myHRP.Position - targetHRP.Position).Unit -- hướng từ họ → mình
+                local newPos = targetHRP.Position + dir * 100 -- tp cách 100 studs (bạn có thể đổi thành 20 nếu muốn gần hơn)
+                myHRP.CFrame = CFrame.new(newPos)
+            end
+        end
+    end
+
+    if value then
+        -- bật toggle → chạy loop
+        if AutoCounterTPConnection then AutoCounterTPConnection:Disconnect() end
+        AutoCounterTPConnection = RunService.Heartbeat:Connect(function()
+            pcall(handleTP)
+        end)
+    else
+        -- tắt toggle → ngắt kết nối
+        if AutoCounterTPConnection then
+            AutoCounterTPConnection:Disconnect()
+            AutoCounterTPConnection = nil
+        end
+    end
+end)
+--// Auto Block Toggle (replace toàn bộ logic cũ)
+-- đặt ở ngoài để giữ được reference
+local AutoBlockConnection
+tab2.newToggle("Auto Block", "Not Bad", false, function(value)
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+
+    -- List animation IDs ...
+    local BlockAnimations = {
+        10469643643,10469639222,10469630950,10469493270, -- combat
+        10479335397,13380255751, -- dash
+        10468665991,10466974800,10471336737,12510170988, -- sai
+        14516273501,12272894215,12296882427,12307656616,12351854556, -- ga
+        12534735382,12502664044,12509505723,12618271998,12684390285,12684185971, -- cy
+        13376869471,13294790250,13376962659,13365849295,13501296372, -- nin
+        14003607057,14004235777,14046756619,14048349132,14299135500,14967219354,14351441234, -- chay
+        15290930205,15145462680,15295895753,15311685628, -- blade
+        16515850153,16139108718,16431491215,16597322398, -- tat
+        17799224866,17838006839,17857788598,17857880283,18179181663 -- rui
+    }
+
+    local function Block()
+        local args = {[1] = {Goal="KeyPress", Key=Enum.KeyCode.F}}
+        LocalPlayer.Character.Communicate:FireServer(unpack(args))
+    end
+    local function Unblock()
+        local args = {[1] = {Goal="KeyRelease", Key=Enum.KeyCode.F}}
+        LocalPlayer.Character.Communicate:FireServer(unpack(args))
+    end
+
+    local function CheckAndBlock()
+        local char = LocalPlayer.Character
+        if not char or not char:FindFirstChild("Head") then return end
+        local myHead = char.Head
+
+        local shouldBlock = false
+
+        for _, enemy in ipairs(workspace.Live:GetChildren()) do
+            if enemy:IsA("Model") and enemy ~= char and enemy:FindFirstChild("Head") then
+                local dist = (enemy.Head.Position - myHead.Position).Magnitude
+                if dist <= 15 then
+                    local hum = enemy:FindFirstChildOfClass("Humanoid")
+                    if hum and hum.Health > 0 then
+                        if enemy:FindFirstChild("M1ing") then
+                            shouldBlock = true
+                            break
+                        end
+                        local animator = hum:FindFirstChildOfClass("Animator")
+                        if animator then
+                            for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                                local id = tonumber(track.Animation.AnimationId:match("%d+"))
+                                if id and table.find(BlockAnimations, id) then
+                                    shouldBlock = true
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if shouldBlock then break end
+        end
+
+        if shouldBlock then
+            Block()
+        else
+            Unblock()
+        end
+    end
+
+    if value then
+        -- bật: tạo connection mới
+        if AutoBlockConnection then AutoBlockConnection:Disconnect() end
+        AutoBlockConnection = RunService.RenderStepped:Connect(function()
+            pcall(CheckAndBlock)
+        end)
+    else
+        -- tắt: hủy connection hiện tại
+        if AutoBlockConnection then
+            AutoBlockConnection:Disconnect()
+            AutoBlockConnection = nil
+        end
+        Unblock()
+    end
+tab2.newToggle("Aim Nearest Player", "Ngu Moi Bat", false, function(value)
+	getgenv().AutoAimlocking = value;
+	local connection;
+	task.spawn(function()
+		connection = game:GetService("RunService").RenderStepped:Connect(function()
+			if not getgenv().AutoAimlocking then
+				connection:Disconnect();
+				return;
+			end
+			local nearestPlayer, nearestDistance;
+			for _, v in ipairs(game:GetService("Players"):GetPlayers()) do
+				if (v.Character and (v ~= game:GetService("Players").LocalPlayer)) then
+					local distance = (v.Character.Head.Position - game:GetService("Players").LocalPlayer.Character.Head.Position).Magnitude;
+					if (not nearestPlayer or (distance < nearestDistance)) then
+						nearestPlayer = v;
+						nearestDistance = distance;
+					end
+				end
+			end
+			if (nearestPlayer and (nearestDistance <= 35)) then
+				game:GetService("Workspace").CurrentCamera.CFrame = CFrame.new(game:GetService("Workspace").CurrentCamera.CFrame.p, nearestPlayer.Character.HumanoidRootPart.Position);
+			end
+		end);
+	end);
+end);
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+local RunService = game:GetService("RunService");
+local Players = game:GetService("Players");
+tab2.newLabel("🚨 Work Skill : Idk");
+tab2.newToggle("Void Kill", "Unstable", false, function(value)
+	getgenv().AutoDodging = value
+
+	local animations = {
+		["rbxassetid://12273188754"] = 1,
+		["rbxassetid://12309835105"] = 1,
+		["rbxassetid://14048285180"] = 1,
+		["rbxassetid://14004235777"] = 1,
+		["rbxassetid://14705929107"] = 1,
+		["rbxassetid://15295895753"] = 1,
+		["rbxassetid://15145462680"] = 1,
+		["rbxassetid://16139108718"] = 1,
+		["rbxassetid://17799224866"] = 1,
+		["rbxassetid://18182425133"] = 1,
+	}
+
+	local function ifind(t, a)
+		for i, v in pairs(t) do
+			if i == a then
+				return i
+			end
+		end
+		return false
+	end
+
+	task.spawn(function()
+		local plr = game.Players.LocalPlayer
+		local character = plr.Character or plr.CharacterAdded:Wait()
+		local animate = character:WaitForChild("Humanoid"):WaitForChild("Animator")
+		local voidPos = CFrame.new(-664.893, 10000, -335.44) * CFrame.Angles(0, math.rad(-90), 0)
+
+		while getgenv().AutoDodging do
+			task.wait(0.1)
+			for _, track in pairs(animate:GetPlayingAnimationTracks()) do
+				if ifind(animations, track.Animation.AnimationId) then
+					local lastcf = character.HumanoidRootPart.CFrame
+					local enemies = {}
+
+					-- Tìm kẻ địch gần trong bán kính 10
+					for _, enemy in pairs(workspace.Live:GetChildren()) do
+						if enemy:IsA("Model") and enemy ~= character and enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") then
+							if enemy.Humanoid.Health > 0 and (character.HumanoidRootPart.Position - enemy.HumanoidRootPart.Position).Magnitude < 10 then
+								table.insert(enemies, {model = enemy, cf = enemy.HumanoidRootPart.CFrame})
+							end
+						end
+					end
+
+					if #enemies > 0 then
+						-- Teleport mình lên Void
+						character.HumanoidRootPart.CFrame = voidPos
+						character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+						character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+
+						-- Teleport enemies theo
+						for _, data in ipairs(enemies) do
+							local enemy = data.model
+							enemy.HumanoidRootPart.CFrame = voidPos * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+							enemy.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+							enemy.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+						end
+
+						-- Đợi 3s trên Void
+						task.wait(1.7)
+
+						-- Quay lại chỗ cũ
+						character.HumanoidRootPart.CFrame = lastcf
+						character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+						character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+					end
+				end
+			end
+		end
+	end)
+end)
+local function getPlayerNames()
+	local playerNames = {};
+	for _, player in pairs(game.Players:GetPlayers()) do
+		table.insert(playerNames, player.Name);
+	end
+	return playerNames;
+end
+local dropdown = tab6.newDropdown("Select Player", "Select one of these options!", getPlayerNames(), function(selectedPlayer)
+	getgenv().SelectedPlayerName = selectedPlayer;
+	print("Selected player:", selectedPlayer);
+end);
+local function refreshDropdown()
+	local playerNames = getPlayerNames();
+	dropdown:Refresh(playerNames, false);
+end
+tab6.newButton("Refresh Player List", "Refresh the player list", function()
+	refreshDropdown();
+end);
+tab6.newToggle("Auto Teleport", "Toggle Auto Teleport", false, function(value)
+	getgenv().AutoTeleport = value;
+	local teleportRadius = 20;
+	local teleportInterval = 0.5;
+	local angleStep = 15;
+	local currentAngle = 0;
+	if value then
+		task.spawn(function()
+			local connection;
+			connection = game:GetService("RunService").RenderStepped:Connect(function()
+				if (getgenv().AutoTeleport and getgenv().SelectedPlayerName) then
+					local targetPlayer = game.Players:FindFirstChild(getgenv().SelectedPlayerName);
+					if (targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head")) then
+						local targetHead = targetPlayer.Character.Head;
+						local xOffset = math.cos(math.rad(currentAngle)) * teleportRadius;
+						local zOffset = math.sin(math.rad(currentAngle)) * teleportRadius;
+						local newPosition = targetHead.Position + Vector3.new(xOffset, 0, zOffset) + Vector3.new(0, 5, 0);
+						game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(newPosition, targetHead.Position);
+						currentAngle = (currentAngle + angleStep) % 360;
+					end
+				else
+					connection:Disconnect();
+				end
+			end);
+			while getgenv().AutoTeleport do
+				task.wait(teleportInterval);
+			end
+		end);
+	elseif connection then
+		connection:Disconnect();
+	end
+end);
+tab6.newToggle("Enable Animation-Based Teleport", "Toggle Animation-Based Teleport", false, function(value)
+	getgenv().AutoAtomicCounterBait = value;
+	local function handleAnimationTeleport()
+		local animationId = "rbxassetid://17798742655";
+		local animationDuration = 4.5;
+		while getgenv().AutoAtomicCounterBait do
+			pcall(function()
+				local atomicCounterAnimation = Instance.new("Animation");
+				atomicCounterAnimation.AnimationId = animationId;
+				local animationTrack = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(atomicCounterAnimation);
+				animationTrack:Play();
+				animationTrack:AdjustSpeed(1);
+			end);
+			task.wait(animationDuration);
+		end
+	end
+	task.spawn(handleAnimationTeleport);
+end);
+game.Players.PlayerAdded:Connect(function()
+	refreshDropdown();
+end);
+game.Players.PlayerRemoving:Connect(function()
+	refreshDropdown();
+end);
+-- Label hướng dẫn
+tab3.newLabel("Select Character", "Chac Cung Deo Ai Dung");
+
+-- Danh sách nhân vật từ SimpleSpy
+local characterOptions = {
+    "Bald",
+    "Hunter",
+    "Cyborg",
+    "Batter",
+    "Purple",
+    "Blade",
+    "KJ",
+    "Ninja",
+    "Esper"
+}
+
+-- Dropdown chọn nhân vật
+local dropdown = tab3.newDropdown("Select Character", "Chọn một trong các nhân vật dưới đây!", characterOptions, function(selectedCharacter)
+    -- Gửi Remote chọn nhân vật
+    local selectArgs = {
+        [1] = {
+            Goal = "Change Character",
+            Character = selectedCharacter
+        }
+    }
+    game:GetService("Players").LocalPlayer.Character.Communicate:FireServer(unpack(selectArgs))
+
+    print("Selected character:", selectedCharacter)
+end)
+tab3.newLabel("Farm Player", "Duoc 9/10 Thang Cut Tay Khuyen Dung");
+local players = game.Players:GetPlayers();
+local playerNames = {};
+for _, player in pairs(players) do
+	table.insert(playerNames, player.Name);
+end
+local dropdown = tab3.newDropdown("Select Player", "Chọn một người chơi từ danh sách!", playerNames, function(selectedPlayer)
+	getgenv().SelectedPlayerName = selectedPlayer;
+	print("Selected player:", selectedPlayer);
+end);
+local function refreshDropdown()
+	local newPlayerNames = {};
+	for _, player in pairs(game.Players:GetPlayers()) do
+		table.insert(newPlayerNames, player.Name);
+	end
+	dropdown:Refresh(newPlayerNames, false);
+end
+tab3.newButton("Refresh Player List", "Cập nhật danh sách người chơi", function()
+	refreshDropdown();
+end);
+tab3.newToggle("Auto Farm Player", "Bật hoặc tắt chế độ auto farm", false, function(value)
+	getgenv().AutoFarmPlayer = value;
+	getgenv().TeleportDistance = 5;
+	task.spawn(function()
+		if not getgenv().AutoFarmPlayer then
+			game.Players.LocalPlayer.Character.Humanoid.RootPart.CFrame = game.Players.LocalPlayer.Character.Humanoid.RootPart.CFrame * CFrame.new(0, 20, -20);
+		end
+	end);
+	local LPlayer = game.Players.LocalPlayer;
+	local CRoot;
+	local function UpdateCRoot()
+		local LChar = LPlayer.Character;
+		if LChar then
+			CRoot = LChar:FindFirstChild("HumanoidRootPart");
+			if not CRoot then
+				LChar.ChildAdded:Wait();
+				CRoot = LChar:WaitForChild("HumanoidRootPart");
+			end
+		end
+	end
+	local function FindSelectedPlayer()
+		local selectedPlayer = game.Players:FindFirstChild(getgenv().SelectedPlayerName);
+		if (selectedPlayer and selectedPlayer.Character) then
+			local HumanoidRoot = selectedPlayer.Character:FindFirstChild("HumanoidRootPart");
+			return HumanoidRoot;
+		end
+		return nil;
+	end
+	task.spawn(function()
+		while getgenv().AutoFarmPlayer do
+			pcall(function()
+				UpdateCRoot();
+				if CRoot then
+					local Found = FindSelectedPlayer();
+					if Found then
+						LPlayer.Character:SetPrimaryPartCFrame(CFrame.new(((Found.Position - Vector3.new(0, Found.Size.Y / -7, 0)) - (Found.CFrame.LookVector * getgenv().TeleportDistance)) + Vector3.new(0, 1, 0), Found.Position - Vector3.new(0, Found.Size.Y / 5, 0)));
+						if (not workspace.Live:FindFirstChild(Found.Parent.Name):FindFirstChild("RagdollSim") and not workspace.Live:FindFirstChild(Found.Parent.Name):FindFirstChild("AbsoluteImmortal")) then
+							task.spawn(function()
+								local args = {[1]={Goal="LeftClick"}};
+								game:GetService("Players").LocalPlayer.Character.Communicate:FireServer(unpack(args));
+								local args = {[1]={Type="M1fire"}};
+								game:GetService("Players").LocalPlayer.Character.Communicate:FireServer(unpack(args));
+							end);
+							for _, x in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+								if (x:IsA("Tool") and (x.Name ~= "Prey's Peril") and (x.Name ~= "Split Second Counter")) then
+									game.Players.LocalPlayer.Character:WaitForChild("Humanoid"):EquipTool(x);
+									x:Activate();
+									game.Players.LocalPlayer.Character:WaitForChild("Humanoid"):UnequipTools();
+								end
+							end
+						end
+					end
+				end
+			end);
+			task.wait(0.015);
+		end
+	end);
+	LPlayer.CharacterAdded:Connect(function()
+		task.wait(1.5);
+		UpdateCRoot();
+	end);
+	game.Players.PlayerAdded:Connect(function()
+		refreshDropdown();
+	end);
+	game.Players.PlayerRemoving:Connect(function()
+		refreshDropdown();
+	end);
+end);
+local stealKillToggle = tab3.newToggle("Steal Kill", "Steal Kill Toggle", false, function(value)
+	getgenv().AutoKillLowestHealthPlr = value;
+	getgenv().TeleportDistance = 3;
+	local LPlayer = game.Players.LocalPlayer;
+	local CRoot;
+	local function UpdateCRoot()
+		local LChar = LPlayer.Character;
+		if LChar then
+			CRoot = LChar:FindFirstChild("HumanoidRootPart");
+			if not CRoot then
+				LChar.ChildAdded:Wait();
+				CRoot = LChar:WaitForChild("HumanoidRootPart");
+			end
+		end
+	end
+	local function isPlayer(X)
+		return game.Players:GetPlayerFromCharacter(X) ~= nil;
+	end
+	local function FindLowestHealth()
+		local LowestHealth = math.huge;
+		local NearestPlr = nil;
+		for _, v in pairs(game.Workspace.Live:GetChildren()) do
+			if isPlayer(v) then
+				local Humanoid = v:FindFirstChildOfClass("Humanoid");
+				local HumanoidRoot = v:FindFirstChild("HumanoidRootPart");
+				if (Humanoid and HumanoidRoot and (v ~= LPlayer.Character)) then
+					if ((Humanoid.Health > 0) and (Humanoid.Health <= 35)) then
+						LowestHealth = Humanoid.Health;
+						NearestPlr = HumanoidRoot;
+					end
+				end
+			end
+		end
+		return NearestPlr;
+	end
+	task.spawn(function()
+		while getgenv().AutoKillLowestHealthPlr do
+			pcall(function()
+				UpdateCRoot();
+				if CRoot then
+					local Found = FindLowestHealth();
+					if Found then
+						LPlayer.Character:SetPrimaryPartCFrame(CFrame.new(((Found.Position - Vector3.new(0, Found.Size.Y / 2, 0)) - (Found.CFrame.LookVector * getgenv().TeleportDistance)) + Vector3.new(0, -6, 0), Found.Position - Vector3.new(0, Found.Size.Y / 2, 0)));
+						if (not workspace.Live:FindFirstChild(Found.Parent.Name):FindFirstChild("RagdollSim") and not workspace.Live:FindFirstChild(Found.Parent.Name):FindFirstChild("AbsoluteImmortal")) then
+							task.spawn(function()
+								local args = {[1]={Goal="LeftClick"}};
+								game:GetService("Players").LocalPlayer.Character.Communicate:FireServer(unpack(args));
+								local args = {[1]={Type="M1fire"}};
+								game:GetService("Players").LocalPlayer.Character.Communicate:FireServer(unpack(args));
+							end);
+							for _, x in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+								if (x:IsA("Tool") and (x.Name ~= "Prey's Peril") and (x.Name ~= "Split Second Counter")) then
+									game.Players.LocalPlayer.Character:WaitForChild("Humanoid"):EquipTool(x);
+									x:Activate();
+									game.Players.LocalPlayer.Character:WaitForChild("Humanoid"):UnequipTools();
+								end
+							end
+						end
+					else
+						game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(67.89816284179688, 613.1607666015625, -443.03302001953125);
+					end
+				end
+			end);
+			task.wait(0.015);
+		end
+	end);
+	LPlayer.CharacterAdded:Connect(function()
+		task.wait(1.5);
+		UpdateCRoot();
+	end);
+end);
+local autoFarmToggle = tab3.newToggle("Auto Farm Nearest Player", "Auto Farm Nearest Player Toggle", false, function(value)
+	getgenv().AutoKillNearestPlr = value;
+	getgenv().TeleportDistance = 5;
+	task.spawn(function()
+		if not getgenv().AutoKillNearestPlr then
+			game.Players.LocalPlayer.Character.Humanoid.RootPart.CFrame = game.Players.LocalPlayer.Character.Humanoid.RootPart.CFrame * CFrame.new(0, 20, -20);
+		end
+	end);
+	local LPlayer = game.Players.LocalPlayer;
+	local CRoot;
+	local function UpdateCRoot()
+		local LChar = LPlayer.Character;
+		if LChar then
+			CRoot = LChar:FindFirstChild("HumanoidRootPart");
+			if not CRoot then
+				LChar.ChildAdded:Wait();
+				CRoot = LChar:WaitForChild("HumanoidRootPart");
+			end
+		end
+	end
+	local function isPlayer(X)
+		return game.Players:GetPlayerFromCharacter(X) ~= nil;
+	end
+	local function FindNearest()
+		local Dist = math.huge;
+		local NearestPlr = nil;
+		for _, v in pairs(game.Workspace.Live:GetChildren()) do
+			if isPlayer(v) then
+				local Humanoid = v:FindFirstChildOfClass("Humanoid");
+				local HumanoidRoot = v:FindFirstChild("HumanoidRootPart");
+				if (Humanoid and HumanoidRoot and (v ~= LPlayer.Character)) then
+					if (Humanoid.Health > 0) then
+						local Mag = (CRoot.Position - HumanoidRoot.Position).magnitude;
+						if (Mag < Dist) then
+							Dist = Mag;
+							NearestPlr = HumanoidRoot;
+						end
+					end
+				end
+			end
+		end
+		return NearestPlr;
+	end
+	task.spawn(function()
+		while getgenv().AutoKillNearestPlr do
+			pcall(function()
+				UpdateCRoot();
+				if CRoot then
+					local Found = FindNearest();
+					if Found then
+						LPlayer.Character:SetPrimaryPartCFrame(CFrame.new(((Found.Position - Vector3.new(0, Found.Size.Y / 2, 0)) - (Found.CFrame.LookVector * getgenv().TeleportDistance)) + Vector3.new(0, -6, 0), Found.Position - Vector3.new(0, Found.Size.Y / 2, 0)));
+						if (not workspace.Live:FindFirstChild(Found.Parent.Name):FindFirstChild("RagdollSim") and not workspace.Live:FindFirstChild(Found.Parent.Name):FindFirstChild("AbsoluteImmortal")) then
+							task.spawn(function()
+								local args = {[1]={Goal="LeftClick"}};
+								game:GetService("Players").LocalPlayer.Character.Communicate:FireServer(unpack(args));
+								local args = {[1]={Type="M1fire"}};
+								game:GetService("Players").LocalPlayer.Character.Communicate:FireServer(unpack(args));
+							end);
+							for _, x in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+								if (x:IsA("Tool") and (x.Name ~= "Prey's Peril") and (x.Name ~= "Split Second Counter")) then
+									game.Players.LocalPlayer.Character:WaitForChild("Humanoid"):EquipTool(x);
+									x:Activate();
+									game.Players.LocalPlayer.Character:WaitForChild("Humanoid"):UnequipTools();
+								end
+							end
+						end
+					end
+				end
+			end);
+			task.wait(0.015);
+		end
+	end);
+	LPlayer.CharacterAdded:Connect(function()
+		task.wait(1.5);
+		UpdateCRoot();
+	end);
+end);
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Khởi tạo char và hrp, theo dõi respawn
+local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+LocalPlayer.CharacterAdded:Connect(function(newChar)
+    char = newChar
+    hrp = char:WaitForChild("HumanoidRootPart")
+end)
+
+local running = false
+local pinnedPlayerName = nil -- tên player ghim
+
+-- Hàm click Communicate
+local function sendClick()
+    if char:FindFirstChild("Communicate") then
+        local args = {
+            [1] = { ["Mobile"] = true, ["Goal"] = "LeftClick" }
+        }
+        char.Communicate:FireServer(unpack(args))
+    end
+end
+
+-- Danh sách Trashcan đầy đủ
+local trashPositions = {
+    Vector3.new(508.7666, 439.4648, -19.1403),
+    Vector3.new(72.2151, 439.4882, -81.3822),
+    Vector3.new(121.9534, 439.5273, 407.2320),
+    Vector3.new(58.45906066894531, 439.44921875, -275.2605895996094),  
+    Vector3.new(411.07037353515625, 439.4453125, 271.73931884765625),  
+    Vector3.new(-110.53706359863281, 439.5234375, 286.1946105957031),  
+    Vector3.new(447.08721923828125, 439.46484375, 228.91619873046875),  
+    Vector3.new(299.886474609375, 439.48046875, 321.8551940917969),  
+    Vector3.new(126.39845275878906, 439.4375, 182.8609619140625),  
+    Vector3.new(-214.41590881347656, 439.46875, 131.03216552734375),  
+    Vector3.new(173.69924926757812, 439.4375, 158.9178009033203),  
+    Vector3.new(458.1455993652344, 439.45703125, 104.1571273803711),  
+    Vector3.new(-215.3744659423828, 439.484375, -70.01102447509766),  
+    Vector3.new(-63.53294372558594, 439.1953125, -228.97152709960938),  
+    Vector3.new(138.61639404296875, 439.48828125, -315.24859619140625),  
+    Vector3.new(-207.82655334472656, 439.48046875, -225.92156982421875),  
+    Vector3.new(0.41046142578125, 439.4921875, -104.72460174560547),  
+    Vector3.new(242.91400146484375, 439.50390625, -311.2977600097656),  
+    Vector3.new(43.254180908203125, 439.6328125, 166.7883758544922),  
+    Vector3.new(507.741455078125, 439.48828125, 171.60403442382812),  
+    Vector3.new(8.068939208984375, 439.44921875, -261.3405456542969),
+}
+
+-- Tạo CFrame hướng về tâm map
+local function getFacingCFrame(pos)
+    return CFrame.new(pos, Vector3.new(0, pos.Y, 0))
+end
+
+-- Hàm tìm target player, ưu tiên player ghim
+local function getTargetPlayer()
+    local targetPlayerModel = nil
+
+    -- Nếu có player ghim
+    if pinnedPlayerName and workspace:FindFirstChild("Live") then
+        for _, plr in pairs(workspace.Live:GetChildren()) do
+            if plr:FindFirstChild("HumanoidRootPart") and plr.Name:lower() == pinnedPlayerName:lower() then
+                targetPlayerModel = plr
+                break
+            end
+        end
+    end
+
+    -- Nếu player ghim không tồn tại, random player
+    if not targetPlayerModel and workspace:FindFirstChild("Live") then
+        for _, plr in pairs(workspace.Live:GetChildren()) do
+            if plr:FindFirstChild("HumanoidRootPart") and plr.Name ~= LocalPlayer.Name then
+                targetPlayerModel = plr
+                break
+            end
+        end
+    end
+
+    return targetPlayerModel
+end
+
+-- Hàm chính
+local function doAction()
+    local index = 1
+    while running do
+        -- TP đến trash
+        local targetTrash = trashPositions[index]
+        index = index + 1
+        if index > #trashPositions then index = 1 end
+
+        if hrp then
+            hrp.CFrame = getFacingCFrame(targetTrash) * CFrame.new(0,0,3)
+        end
+
+        task.wait(0.5)
+        sendClick()
+        task.wait(0.5)
+
+        -- Target player
+        local targetPlayerModel = getTargetPlayer()
+        if targetPlayerModel then
+            local targetHRP = targetPlayerModel:FindFirstChild("HumanoidRootPart")
+            if targetHRP then
+                local followTime = 2
+                local t = tick()
+                while running and tick()-t < followTime do
+                    if hrp then
+                        hrp.CFrame = targetHRP.CFrame * CFrame.new(0,0,3)
+                    end
+                    sendClick()
+                    task.wait(0.3)
+                end
+            end
+        end
+
+        task.wait(1)
+    end
+end
+
+-- Input ghim player
+tab3.newInput("Target Player", "Nhập tên player để ghim (không nhập = random)", function(text)
+    pinnedPlayerName = text ~= "" and text or nil
+    print("Pinned player:", pinnedPlayerName or "Random")
+end)
+
+-- Toggle script
+tab3.newToggle("Auto Trashcan Farming", "Bật/tắt script tự động", false, function(state)
+    running = state
+    if running then
+        task.spawn(doAction)
+    end
+end)
+local label = tab4.newLabel("💫 Teleport 💫", "SCRIPT DUOC 11/10 THANG BEO KHUYEN DUNG");
+local function teleportToPosition(position)
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position);
+end
+local function createTeleportButton(name, description, position)
+	tab4.newButton(name, description, function()
+		teleportToPosition(position);
+	end);
+end
+createTeleportButton("💀 Mid ", "Ở Giữa", Vector3.new(140.01397705078125, 440.75439453125, 37.44272232055664));
+createTeleportButton("🏡 Spawning", "Them Gi Day Ta", Vector3.new(369.93157958984375, 441.115234375, 149.96478271484375));
+createTeleportButton("🏡 Spawning 2", "Ok Them Dong Nay", Vector3.new(212.30484008789062, 441.1195068359375, -236.3165740966797));
+createTeleportButton("🏡 Spawning 3", "Chao Ban Nha", Vector3.new(-37.5219841003418, 441.1156005859375, -115.17613983154297));
+createTeleportButton("🏡 Spawning 4", "Toi Yeu Ban", Vector3.new(226.1798858642578, 440.75439453125, -3.2724626064300537));
+createTeleportButton("🏡 Spawning 5", "Sao Ban Lai O Day", Vector3.new(90.87291717529297, 441.1156005859375, 270.83123779296875));
+createTeleportButton("🏡 Spawning 6", "Helo Mi", Vector3.new(377.20733642578125, 441.1551513671875, -64.81111907958984));
+createTeleportButton("🏡 Spawning 7", "I Fan Du 300 Nam", Vector3.new(-69.72547912597656, 441.1566162109375, 88.79796600341797));
+createTeleportButton("⛰️ Ba Den Mountain ", "Nui Ba Den", Vector3.new(-325.3216552734375, 615.1463012695312, -77.88626098632812));
+createTeleportButton("⛰️ Ba Den Mountain 2", "Linh Lam", Vector3.new(-150.66259765625, 617.2361450195312, -320.5211486816406));
+createTeleportButton("⛰️ Ba Den Mountain 3", "Oan Hon Bat Toi Di", Vector3.new(649.321044921875, 684.193115234375, 98.16609191894531));
+createTeleportButton("⛰️ Ba Den Mountain 4", "Ok Tridog", Vector3.new(393.7369079589844, 628.2557983398438, -430.7579040527344));
+createTeleportButton("⛰️ Ba Den Mountain 5", "Tay Ninh An Thit Nguoi", Vector3.new(-289.96044921875, 657.6219482421875, 267.6683044433594));
+createTeleportButton("📊 Kill Leaderboards ", "zxcvbnm", Vector3.new(239.13331604003906, 440.75439453125, -5.634086608886719));
+createTeleportButton("📊 Kill Leaderboards  Real", "Kill Day Moi Riel", Vector3.new(56.392799377441406, 440.75439453125, 68.3272705078125));
+createTeleportButton("🚧 BUG ", "Ae 3 Mien", Vector3.new(558.318115234375, 439.5119323730469, 484.01544189453125));
+createTeleportButton("🚧 BUG 2", "Error", Vector3.new(572.8461303710938, 439.5119323730469, -386.2655029296875));
+createTeleportButton("🚧 BUG 3", "Error", Vector3.new(3.7887420654296875, 465.48046875, -325.2402038574219));
+createTeleportButton("⚛️ Atomic Domain", "Domain Expansion", Vector3.new(1064.53759765625, 131.2901611328125, 23007.78125));
+createTeleportButton("🤜 Death Counter Domain", "Domain Expansion", Vector3.new(-65.31675720214844, 29.253990173339844, 20383.15625));
+createTeleportButton("☁️ SKY", "Sky Oiiiiiiiiiiii", Vector3.new(127.72346496582031, 853.0130615234375, 32.85549545288086));
+tab5.newLabel("Teleport Player🤣");
+local dropdown = tab5.newDropdown("Select Player", "Select one of these options!", getPlayerNames(), function(selectedPlayer)
+	getgenv().SelectedPlayerName = selectedPlayer;
+	print("Selected player:", selectedPlayer);
+end);
+local function refreshDropdown()
+	local playerNames = getPlayerNames();
+	dropdown:Refresh(playerNames, false);
+end
+tab5.newButton("Refresh Player List", "Refresh the player list", function()
+	refreshDropdown();
+end);
+tab5.newToggle("Auto Teleport", "Toggle Auto Teleport", false, function(value)
+	getgenv().AutoTeleport = value;
+	local teleportRadius = 20;
+	local teleportInterval = 0.5;
+	local angleStep = 15;
+	local currentAngle = 0;
+	if value then
+		task.spawn(function()
+			local connection;
+			connection = game:GetService("RunService").RenderStepped:Connect(function()
+				if (getgenv().AutoTeleport and getgenv().SelectedPlayerName) then
+					local targetPlayer = game.Players:FindFirstChild(getgenv().SelectedPlayerName);
+					if (targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head")) then
+						local targetHead = targetPlayer.Character.Head;
+						local xOffset = math.cos(math.rad(currentAngle)) * teleportRadius;
+						local zOffset = math.sin(math.rad(currentAngle)) * teleportRadius;
+						local newPosition = targetHead.Position + Vector3.new(xOffset, 0, zOffset) + Vector3.new(0, 5, 0);
+						game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(newPosition, targetHead.Position);
+						currentAngle = (currentAngle + angleStep) % 360;
+					end
+				else
+					connection:Disconnect();
+				end
+			end);
+			while getgenv().AutoTeleport do
+				task.wait(teleportInterval);
+			end
+		end);
+	elseif connection then
+		connection:Disconnect();
+	end
+end);
+game.Players.PlayerAdded:Connect(function()
+	refreshDropdown();
+end);
+game.Players.PlayerRemoving:Connect(function()
+	refreshDropdown();
+end);
+tab5.newLabel("Hai Vai Ca Dai😎");
+tab5.newToggle("M1ing Teleport Vip Pro Max", "Tự động dịch chuyển khi kích hoạt M1ing", false, function(value)
+	getgenv().AutoTeleportPunching = value;
+	getgenv().DetectionDistance = 55;
+	getgenv().TeleportBackDelay = 0.2;
+	getgenv().RandomTeleportRadius = 25;
+	local LPlayer = game.Players.LocalPlayer;
+	local CRoot;
+	local function UpdateCRoot()
+		local LChar = LPlayer.Character;
+		if LChar then
+			CRoot = LChar:FindFirstChild("HumanoidRootPart");
+			if not CRoot then
+				LChar.ChildAdded:Wait();
+				CRoot = LChar:WaitForChild("HumanoidRootPart");
+			end
+		end
+	end
+	local function FindNearestEnemy()
+		local nearestDistance = getgenv().DetectionDistance;
+		local nearestEnemy = nil;
+		for _, v in pairs(game.Workspace.Live:GetChildren()) do
+			local Humanoid = v:FindFirstChildOfClass("Humanoid");
+			local HumanoidRoot = v:FindFirstChild("HumanoidRootPart");
+			if (Humanoid and HumanoidRoot and (v ~= LPlayer.Character)) then
+				if (Humanoid.Health > 0) then
+					local distance = (CRoot.Position - HumanoidRoot.Position).magnitude;
+					if (distance < nearestDistance) then
+						nearestDistance = distance;
+						nearestEnemy = HumanoidRoot;
+					end
+				end
+			end
+		end
+		return nearestEnemy;
+	end
+	local function TeleportToRandomPosition(originalPosition)
+		local randomAngle = math.rad(math.random(0, 360));
+		local randomDistance = math.random(10, getgenv().RandomTeleportRadius);
+		local xOffset = math.cos(randomAngle) * randomDistance;
+		local zOffset = math.sin(randomAngle) * randomDistance;
+		local newPosition = originalPosition.Position + Vector3.new(xOffset, 0, zOffset);
+		game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(newPosition));
+	end
+	if value then
+		task.spawn(function()
+			while getgenv().AutoTeleportPunching do
+				pcall(function()
+					UpdateCRoot();
+					if workspace.Live[LPlayer.Name]:FindFirstChild("M1ing") then
+						if CRoot then
+							local target = FindNearestEnemy();
+							if target then
+								local originalPosition = CRoot.CFrame;
+								local behindPosition = target.Position - (target.CFrame.LookVector * 3);
+								game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(behindPosition, target.Position));
+								task.wait(getgenv().TeleportBackDelay);
+								TeleportToRandomPosition(CRoot.CFrame);
+							end
+						end
+					end
+				end);
+				task.wait(0.015);
+			end
+		end);
+	else
+		getgenv().AutoTeleportPunching = false;
+	end
+end);
+tab5.newToggle("MUI", "MUI>Ultra Instinct", false, function(value)
+	getgenv().AutoDodging = value;
+	local teleportRadius = 14;
+	local teleportSpeed = 720;
+
+	-- Bộ animation ID mới
+	local DashAnims   = {7807831448,10479335397,13380255751,13380255751};
+	local SaiAnims    = {10468665991,10466974800,10471336737,12510170988,7807831448};
+	local GaAnims     = {14516273501,12272894215,7807831448,12296882427,12307656616,12351854556};
+	local CyAnims     = {12534735382,7807831448,12502664044,7807831448,12509505723,12618271998,12684390285,12684185971};
+	local NinAnims    = {13376869471,13294790250,13376962659,13365849295,13501296372};
+	local RunAnims    = {14003607057,14004235777,14046756619,14048349132,14299135500,14967219354,14351441234};
+	local BladeAnims  = {15290930205,15145462680,15295895753,15311685628};
+	local TatAnims    = {16515850153,16139108718,16431491215,16597322398};
+	local RuiAnims    = {17799224866,17838006839,17857788598,17857880283,18179181663};
+
+	-- Gom hết ID
+	local Animations = {};
+	for _, animationGroup in pairs({
+		DashAnims, SaiAnims, GaAnims, CyAnims,
+		NinAnims, RunAnims, BladeAnims, TatAnims, RuiAnims
+	}) do
+		for _, animationId in pairs(animationGroup) do
+			table.insert(Animations, animationId);
+		end
+	end
+
+	if value then
+		task.spawn(function()
+			local connection;
+			local currentAngle = 0;
+			connection = game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
+				if getgenv().AutoDodging then
+					pcall(function()
+						for _, enemy in ipairs(workspace.Live:GetChildren()) do
+							if (enemy:IsA("Model") and enemy:FindFirstChild("Head") and enemy.Head:IsA("Part") and (enemy.Head ~= game.Players.LocalPlayer.Character.Head)) then
+								if ((enemy.Head.Position - game.Players.LocalPlayer.Character.Head.Position).Magnitude <= 15) then
+									local humanoid = enemy:FindFirstChildOfClass("Humanoid");
+									if (humanoid and (humanoid.Health > 0)) then
+										local IsUsingAttacks = false;
+										for _, animationTrack in pairs(humanoid:GetPlayingAnimationTracks()) do
+											local animId = tonumber(animationTrack.Animation.AnimationId:match("%d+"))
+											if table.find(Animations, animId) then
+												IsUsingAttacks = true;
+												break;
+											end
+										end
+										if (enemy:FindFirstChild("M1ing") or IsUsingAttacks) then
+											local angle = math.rad(currentAngle);
+											local xOffset = math.cos(angle) * teleportRadius;
+											local zOffset = math.sin(angle) * teleportRadius;
+											local newPosition = enemy.Head.Position + Vector3.new(xOffset, 0, zOffset) + Vector3.new(0, 3, 0);
+											game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(newPosition, enemy.Head.Position);
+											currentAngle = (currentAngle + (teleportSpeed * deltaTime)) % 360;
+										end
+									end
+								end
+							end
+						end
+					end);
+				elseif connection then
+					connection:Disconnect();
+				end
+			end);
+		end);
+	end
+end);
+tab5.newToggle("Super Dodge", "Ye Super Dodge", false, function(value)
+    getgenv().AutoDodging = value;
+    local teleportRadius = 14;
+
+    -- Danh sách animation ID mới
+    local Animations = {
+        -- dash
+        7807831448, 10479335397, 13380255751,
+        -- sai
+        10468665991, 10466974800, 10471336737, 12510170988, 7807831448,
+        -- ga
+        14516273501, 12272894215, 7807831448, 12296882427, 12307656616, 12351854556,
+        -- cy
+        12534735382, 7807831448, 12502664044, 12509505723, 12618271998, 12684390285, 12684185971,
+        -- nin
+        13376869471, 13294790250, 13376962659, 13365849295, 13501296372,
+        -- chay
+        14003607057, 14004235777, 14046756619, 14048349132, 14299135500, 14967219354, 14351441234,
+        -- blade
+        15290930205, 15145462680, 15295895753, 15311685628,
+        -- tat
+        16515850153, 16139108718, 16431491215, 16597322398,
+        -- rui
+        17799224866, 17838006839, 17857788598, 17857880283, 18179181663,
+    }
+
+    if value then
+        task.spawn(function()
+            local connection;
+            connection = game:GetService("RunService").RenderStepped:Connect(function()
+                if getgenv().AutoDodging then
+                    pcall(function()
+                        for _, enemy in ipairs(workspace.Live:GetChildren()) do
+                            if (enemy:IsA("Model") and enemy:FindFirstChild("Head") and enemy.Head:IsA("Part") and (enemy.Head ~= game.Players.LocalPlayer.Character.Head)) then
+                                if ((enemy.Head.Position - game.Players.LocalPlayer.Character.Head.Position).Magnitude <= 18) then
+                                    local humanoid = enemy:FindFirstChildOfClass("Humanoid");
+                                    if (humanoid and (humanoid.Health > 0)) then
+                                        local isUsingAttacks = false;
+                                        for _, animationTrack in pairs(humanoid:GetPlayingAnimationTracks()) do
+                                            if table.find(Animations, tonumber(animationTrack.Animation.AnimationId:match("%d+"))) then
+                                                isUsingAttacks = true;
+                                                break;
+                                            end
+                                        end
+                                        if (enemy:FindFirstChild("M1ing") or isUsingAttacks) then
+                                            local randomOffset = Vector3.new((math.random() * 2 * teleportRadius) - teleportRadius, 0, (math.random() * 2 * teleportRadius) - teleportRadius);
+                                            local newPosition = enemy.Head.Position + randomOffset + Vector3.new(0, 3, 0);
+                                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(newPosition, enemy.Head.Position);
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end);
+                elseif connection then
+                    connection:Disconnect();
+                end
+            end);
+        end);
+    end
+end);
+
+tab5.newInput("Teleport Delay (s)", "Nhập thời gian delay giữa các lần dịch chuyển", function(text)
+	local delay = tonumber(text);
+	if (delay and (delay > 0)) then
+		getgenv().TeleportDelay = delay;
+		print("Teleport delay set to: " .. getgenv().TeleportDelay .. " seconds");
+	else
+		print("Vui lòng nhập một số hợp lệ lớn hơn 0.");
+	end
+end);
+tab5.newToggle("Auto Teleport", "Tự động dịch chuyển! (In trạng thái)", false, function(toggleState)
+	getgenv().AutoTeleport = toggleState;
+	local targetPosition = CFrame.new(1006.97, 184.491, 7.48102);
+	local teleported = false;
+	local originalPosition = nil;
+	if toggleState then
+		print("Auto Teleport On");
+		task.spawn(function()
+			while getgenv().AutoTeleport do
+				pcall(function()
+					if not teleported then
+						originalPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame;
+						game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = targetPosition;
+						teleported = true;
+					else
+						if originalPosition then
+							game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition;
+						end
+						teleported = false;
+					end
+				end);
+				task.wait(getgenv().TeleportDelay);
+			end
+		end);
+	else
+		print("Auto Teleport Off");
+	end
+end);
+
+tab5.newLabel("🤪 STUBID TRICKS", "Animation ID: 16597322398")
+
+local lp = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+-- ===== Spam Animation =====
+local ANIM_ID = 16597322398
+local INTERVAL = 1 -- mặc định 1s
+local runningAnimation = false
+local currentTrack
+local humanoid
+local animator
+
+-- Input thay đổi interval
+tab5.newInput("Set Interval (s)", "Nhập khoảng thời gian spam animation", function(text)
+	local val = tonumber(text)
+	if val and val > 0 then
+		INTERVAL = val
+		print("Interval set to:", INTERVAL)
+	else
+		INTERVAL = 1
+		print("Invalid input, interval reset to 1s")
+	end
+end)
+
+-- Toggle bật/tắt spam animation
+tab5.newToggle("Spam Tatsumaki Animation", "Bật/tắt spam animation", false, function(toggleState)
+	runningAnimation = toggleState
+	print("Auto Spam Animation:", toggleState and "ON" or "OFF")
+	if runningAnimation then
+		local char = lp.Character or lp.CharacterAdded:Wait()
+		humanoid = char:FindFirstChildOfClass("Humanoid") or char:WaitForChild("Humanoid")
+		animator = humanoid:FindFirstChildOfClass("Animator")
+		if not animator then
+			animator = Instance.new("Animator")
+			animator.Parent = humanoid
+		end
+
+		local anim = Instance.new("Animation")
+		anim.AnimationId = "rbxassetid://" .. tostring(ANIM_ID)
+		currentTrack = animator:LoadAnimation(anim)
+		currentTrack.Looped = false
+
+		task.spawn(function()
+			while runningAnimation do
+				if humanoid.Health > 0 and currentTrack then
+					if currentTrack.IsPlaying then currentTrack:Stop(0) end
+					currentTrack:Play(0.05, 1, 1)
+				end
+				task.wait(INTERVAL)
+			end
+		end)
+	else
+		if currentTrack then pcall(function() currentTrack:Stop(0) end) end
+	end
+end)
+
+lp.CharacterAdded:Connect(function()
+	if runningAnimation then
+		task.wait(0.2)
+		local char = lp.Character or lp.CharacterAdded:Wait()
+		humanoid = char:FindFirstChildOfClass("Humanoid") or char:WaitForChild("Humanoid")
+		animator = humanoid:FindFirstChildOfClass("Animator")
+		if not animator then
+			animator = Instance.new("Animator")
+			animator.Parent = humanoid
+		end
+		local anim = Instance.new("Animation")
+		anim.AnimationId = "rbxassetid://" .. tostring(ANIM_ID)
+		currentTrack = animator:LoadAnimation(anim)
+		currentTrack.Looped = false
+	end
+end)
+
+-- ===== Fling =====
+local flingPower = 10000
+local runningFling = false
+local hrp, charFling
+
+-- Input thay đổi lực fling
+tab5.newInput("Fling Power", "Nhập lực fling (5k ~ 55k)", function(text)
+	local val = tonumber(text)
+	if val and val >= 5000 and val <= 55000 then
+		flingPower = val
+		print("Fling Power set to:", flingPower)
+	else
+		flingPower = 10000
+		print("Invalid input, Fling Power reset to 10000")
+	end
+end)
+
+-- Toggle bật/tắt fling
+tab5.newToggle("Enable Fling", "Bật/tắt fling", false, function(toggleState)
+	runningFling = toggleState
+	print("Fling:", toggleState and "ON" or "OFF")
+	if runningFling then
+		charFling = lp.Character or lp.CharacterAdded:Wait()
+		hrp = charFling:FindFirstChild("HumanoidRootPart") or charFling:WaitForChild("HumanoidRootPart")
+
+		task.spawn(function()
+			local movel = 0.1
+			while runningFling do
+				if hrp and charFling and charFling.Parent then
+					local vel = hrp.Velocity
+					hrp.Velocity = vel * flingPower + Vector3.new(0, flingPower, 0)
+					RunService.RenderStepped:Wait()
+					hrp.Velocity = vel
+					RunService.Stepped:Wait()
+					hrp.Velocity = vel + Vector3.new(0, movel, 0)
+					movel = movel * -1
+				end
+				RunService.Heartbeat:Wait()
+			end
+		end)
+	end
+end)
+
+lp.CharacterAdded:Connect(function()
+	if runningFling then
+		task.wait(0.2)
+		charFling = lp.Character or lp.CharacterAdded:Wait()
+		hrp = charFling:FindFirstChild("HumanoidRootPart") or charFling:WaitForChild("HumanoidRootPart")
+	end
+end)
+
+-- ===== Spin =====
+local spinSpeed = 0
+local spinning = false
+local charSpin = lp.Character or lp.CharacterAdded:Wait()
+
+-- Input thay đổi tốc độ spin
+tab5.newInput("Spin Speed", "Nhập tốc độ xoay (độ mỗi frame)", function(text)
+	local val = tonumber(text)
+	if val and val > 0 then
+		spinSpeed = val
+		print("Spin Speed set to:", spinSpeed)
+	else
+		spinSpeed = 0
+		print("Invalid input, Spin Speed reset to 0")
+	end
+end)
+
+-- Toggle bật/tắt spin
+tab5.newToggle("Enable Spin", "Bật/tắt spin", false, function(toggleState)
+	spinning = toggleState
+	print("Spin:", spinning and "ON" or "OFF")
+end)
+
+RunService.RenderStepped:Connect(function()
+	if spinning and charSpin and charSpin:FindFirstChild("HumanoidRootPart") and spinSpeed > 0 then
+		charSpin.HumanoidRootPart.CFrame = charSpin.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
+	end
+end)
+
+lp.CharacterAdded:Connect(function()
+	task.wait(0.2)
+	charSpin = lp.Character or lp.CharacterAdded:Wait()
+end)
+
+tab5.newLabel("🚨 Bait");
+tab5.newToggle("AtomicCounter", "Bait", false, function(value)
+	getgenv().AutoAtomicCounterBait = value;
+	local function handleAnimationTeleport()
+		local animationId = "rbxassetid://15311685628";
+		local animationDuration = 4.5;
+		while getgenv().AutoAtomicCounterBait do
+			pcall(function()
+				local atomicCounterAnimation = Instance.new("Animation");
+				atomicCounterAnimation.AnimationId = animationId;
+				local animationTrack = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(atomicCounterAnimation);
+				animationTrack:Play();
+				animationTrack:AdjustSpeed(1);
+			end);
+			task.wait(animationDuration);
+		end
+	end
+	task.spawn(handleAnimationTeleport);
+end);
+tab5.newToggle("Garou Counter Animation", "Bait", false, function(value)
+	getgenv().AutoAtomicCounterBait = value;
+	local function handleAnimationTeleport()
+		local animationId = "rbxassetid://12351854556";
+		local animationDuration = 4.5;
+		while getgenv().AutoAtomicCounterBait do
+			pcall(function()
+				local atomicCounterAnimation = Instance.new("Animation");
+				atomicCounterAnimation.AnimationId = animationId;
+				local animationTrack = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(atomicCounterAnimation);
+				animationTrack:Play();
+				animationTrack:AdjustSpeed(1);
+			end);
+			task.wait(animationDuration);
+		end
+	end
+	task.spawn(handleAnimationTeleport);
+end);
+tab5.newToggle("Saitama Ultimate Animation", "Bait", false, function(value)
+	getgenv().AutoAtomicCounterBait = value;
+	local function handleAnimationTeleport()
+		local animationId = "rbxassetid://12447707844";
+		local animationDuration = 0.5;
+		while getgenv().AutoAtomicCounterBait do
+			pcall(function()
+				local atomicCounterAnimation = Instance.new("Animation");
+				atomicCounterAnimation.AnimationId = animationId;
+				local animationTrack = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(atomicCounterAnimation);
+				animationTrack:Play();
+				animationTrack:AdjustSpeed(1);
+			end);
+			task.wait(animationDuration);
+		end
+	end
+	task.spawn(handleAnimationTeleport);
+end);
+tab5.newToggle("Table Flip Animation", "Toggle Animation-Based Teleport", false, function(value)
+	getgenv().AutoAtomicCounterBait = value;
+	local function handleAnimationTeleport()
+		local animationId = "rbxassetid://11365563255";
+		local animationDuration = 10;
+		while getgenv().AutoAtomicCounterBait do
+			pcall(function()
+				local atomicCounterAnimation = Instance.new("Animation");
+				atomicCounterAnimation.AnimationId = animationId;
+				local animationTrack = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(atomicCounterAnimation);
+				animationTrack:Play();
+				animationTrack:AdjustSpeed(1);
+			end);
+			task.wait(animationDuration);
+		end
+	end
+	task.spawn(handleAnimationTeleport);
+end);
+tab5.newToggle("Combat Animation Loop", "Play combat animations in sequence", false, function(value)
+    getgenv().AutoCombatAnim = value;
+
+    -- Danh sách ID combat
+    local combatAnimations = {
+        "rbxassetid://17325510002",
+        "rbxassetid://17325513870",
+        "rbxassetid://17325522388",
+        "rbxassetid://17325537719"
+    }
+
+    -- Hàm chạy animation theo thứ tự
+    local function playCombatAnimations()
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+
+        if not humanoid then return end
+
+        while getgenv().AutoCombatAnim do
+            for _, animId in ipairs(combatAnimations) do
+                pcall(function()
+                    local anim = Instance.new("Animation")
+                    anim.AnimationId = animId
+                    local track = humanoid:LoadAnimation(anim)
+                    track:Play()
+                    track:AdjustSpeed(1)
+                    task.wait(track.Length) -- đợi đúng thời lượng animation
+                end)
+            end
+            task.wait(3) -- nghỉ 3s rồi lặp lại từ đầu
+        end
+    end
+
+    -- Chạy ở thread riêng
+    if value then
+        task.spawn(playCombatAnimations)
+    end
+end)
+
+tab1.newLabel("Credit 😎");
+tab1.newButton("Source By FlameW❤️‍🔥", "His Discord", function()
+	setclipboard("https://discord.gg/flame1st");
+	print("Text Copied: This is the text to copy");
+end);
+tab1.newButton("DrRay UI Library📨", "Github", function()
+	setclipboard("https://github.com/AZYsGithub/DrRay-UI-Library");
+	print("Text Copied: This is the text to copy");
+end);
+tab1.newButton("Cam On Chinh Ban Than Toi👈", "Uoc Duoc Donate", function()
+	setclipboard("MB 160129067375");
+end);
+window:Toggle();
+window:Open();
+window:Close();
+window:Hide();
+window:Show();
