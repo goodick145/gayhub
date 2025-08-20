@@ -474,7 +474,7 @@ tab2.newToggle("Anti Counter TP", "Tự động né người có Counter gần b
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
 
-    -- Hàm tìm player có Counter trong phạm vi 100 studs
+    -- Hàm tìm player có Counter trong phạm vi 50 studs
     local function findNearbyCounterPlayer()
         local myChar = LocalPlayer.Character
         if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return nil end
@@ -504,7 +504,7 @@ tab2.newToggle("Anti Counter TP", "Tự động né người có Counter gần b
 
             if myHRP then
                 local dir = (myHRP.Position - targetHRP.Position).Unit -- hướng từ họ → mình
-                local newPos = targetHRP.Position + dir * 100 -- tp cách 100 studs
+                local newPos = targetHRP.Position + dir * 100 -- tp cách 50 studs
                 myHRP.CFrame = CFrame.new(newPos)
             end
         end
