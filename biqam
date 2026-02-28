@@ -1,7 +1,7 @@
 -- ==============================
 -- SETTINGS
 -- ==============================
-local TP_SPEED = 500 
+local TP_SPEED = 100 
 local CROSSHAIR_RADIUS = 100
 local LAVENDER_RADIUS = 100
 local WAIT_AFTER_TP = 0.5
