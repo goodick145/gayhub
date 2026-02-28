@@ -1,0 +1,177 @@
+-- ==============================
+-- SETTINGS
+-- ==============================
+local TP_SPEED = 500 
+local CROSSHAIR_RADIUS = 100
+local LAVENDER_RADIUS = 100
+local WAIT_AFTER_TP = 0.1
+
+-- LOGIC "COMBO"
+local CH_PER_LAVENDER = 6    
+local POST_COMBO_WAIT = 3    
+local GIVE_UP_TIME = 5 -- MỚI: Nếu sau 5s không có Crosshair thì quay về tìm hoa tiếp
+
+-- VÙNG CẤM (DEADZONE)
+local SAFE_ZONE_POS = Vector3.new(91.9936905, 32.8035164, 551.02533)
+local SAFE_ZONE_RADIUS = 100
+
+-- ==============================
+-- VARIABLES
+-- ==============================
+local allowedCrosshair = 0 
+local comboPhase = "LAVENDER" 
+local isWaiting = false
+local lastCrosshairFound = os.time() -- MỚI: Theo dõi thời gian
+
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local workspace = game:GetService("Workspace")
+
+local function getHRP()
+    return player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+end
+
+-- ==============================
+-- CACHE SYSTEM (FIXED)
+-- ==============================
+local crosshairCache = {}
+local collected = {}
+local collectedLavender = {}
+
+local function updateCache()
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if v.Name == "Crosshair" and v:IsA("BasePart") then crosshairCache[v] = true end
+    end
+end
+
+workspace.DescendantAdded:Connect(function(v) 
+    if v.Name == "Crosshair" then crosshairCache[v] = true end 
+end)
+
+workspace.DescendantRemoving:Connect(function(v) 
+    crosshairCache[v] = nil 
+    collected[v] = nil
+    -- Quan trọng: Khi Object bị xóa khỏi game, xóa khỏi bộ nhớ nhặt
+    collectedLavender[v] = nil 
+end)
+
+updateCache()
+
+-- ==============================
+-- TWEEN ENGINE
+-- ==============================
+local function smoothTP(targetCFrame)
+    local hrp = getHRP()
+    if not hrp or getgenv().IsTweening then return end
+
+    local distance = (hrp.Position - targetCFrame.Position).Magnitude
+    if distance < 2 then return end
+
+    hrp.Velocity = Vector3.zero
+    hrp.RotVelocity = Vector3.zero
+
+    local info = TweenInfo.new(distance / TP_SPEED, Enum.EasingStyle.Linear)
+    local tween = TweenService:Create(hrp, info, {CFrame = targetCFrame * CFrame.new(0, 2.5, 0)})
+    
+    tween:Play()
+    local isInterrupted = false
+    while tween.PlaybackState == Enum.PlaybackState.Playing do
+        if getgenv().IsTweening then tween:Cancel() isInterrupted = true break end
+        task.wait()
+    end
+    
+    if not isInterrupted then
+        hrp.Velocity = Vector3.zero
+        task.wait(WAIT_AFTER_TP)
+    end
+end
+
+-- ==============================
+-- MAIN LOOP
+-- ==============================
+task.spawn(function()
+    print("🛡️ Combo System Fixed: Tự động reset nếu thiếu Crosshair")
+    
+    while true do
+        task.wait(0.1)
+
+        if getgenv().IsTweening or isWaiting then continue end
+        local hrp = getHRP()
+        if not hrp then continue end
+
+        -- KIỂM TRA VÙNG CẤM
+        if (hrp.Position - SAFE_ZONE_POS).Magnitude <= SAFE_ZONE_RADIUS then continue end
+
+        -- LOGIC CHỐNG KẸT: Nếu đang tìm Crosshair quá lâu mà không thấy
+        if comboPhase == "CROSSHAIR" and (os.time() - lastCrosshairFound > GIVE_UP_TIME) then
+            print("⏳ Không tìm thấy Crosshair đủ số lượng, quay về tìm Lavender...")
+            comboPhase = "LAVENDER"
+            allowedCrosshair = 0
+        end
+
+        local target = nil
+
+        -- GIAI ĐOẠN TÌM LAVENDER
+        if comboPhase == "LAVENDER" then
+            local collectibles = workspace:FindFirstChild("Collectibles")
+            if collectibles then
+                local bestDist = LAVENDER_RADIUS
+                for _, v in ipairs(collectibles:GetChildren()) do
+                    -- Kiểm tra thêm v.Parent để chắc chắn hoa còn tồn tại
+                    if v:IsA("BasePart") and v.BrickColor.Name == "Lavender" and not collectedLavender[v] and v.Parent then
+                        local dist = (hrp.Position - v.Position).Magnitude
+                        if dist <= bestDist then
+                            bestDist = dist
+                            target = {part = v, type = "Lavender"}
+                        end
+                    end
+                end
+            end
+        
+        -- GIAI ĐOẠN TÌM CROSSHAIR
+        elseif comboPhase == "CROSSHAIR" then
+            local bestDist = CROSSHAIR_RADIUS
+            for obj in pairs(crosshairCache) do
+                if obj and obj.Parent and not collected[obj] then
+                    local dist = (hrp.Position - obj.Position).Magnitude
+                    if dist <= bestDist then
+                        bestDist = dist
+                        target = {part = obj, type = "Crosshair"}
+                    end
+                end
+            end
+        end
+
+        -- THỰC THI
+        if target then
+            if target.type == "Lavender" then
+                collectedLavender[target.part] = true
+                print("🌸 Nhặt Lavender -> Mở khóa " .. CH_PER_LAVENDER .. " Crosshair")
+                smoothTP(target.part.CFrame)
+                
+                allowedCrosshair = CH_PER_LAVENDER
+                comboPhase = "CROSSHAIR"
+                lastCrosshairFound = os.time() -- Reset đồng hồ đếm ngược
+                
+            elseif target.type == "Crosshair" then
+                collected[target.part] = true
+                allowedCrosshair = allowedCrosshair - 1
+                lastCrosshairFound = os.time() -- Cập nhật thời gian mỗi khi thấy 1 cái
+                
+                print("🎯 Nhặt Crosshair. Còn lại: " .. allowedCrosshair)
+                smoothTP(target.part.CFrame)
+                
+                if allowedCrosshair <= 0 then
+                    print("✅ Xong combo! Nghỉ " .. POST_COMBO_WAIT .. " giây...")
+                    isWaiting = true
+                    comboPhase = "LAVENDER"
+                    
+                    task.delay(POST_COMBO_WAIT, function()
+                        isWaiting = false
+                    end)
+                end
+            end
+        end
+    end
+end)
