@@ -269,7 +269,7 @@ tab2.newToggle("M1ing Teleport", "Very OP", false, function(value)
 		UpdateCRoot();
 	end);
 end);
-tab2.newToggle("Freeze Teleport", "TP khi bạn đang Freeze", false, function(value)
+tab2.newToggle("Freeze TP", "TP khi bạn đang Freeze", false, function(value)
 
     getgenv().AutoTeleportPunching = value
     getgenv().DetectionDistance = 55
@@ -352,6 +352,364 @@ tab2.newToggle("Freeze Teleport", "TP khi bạn đang Freeze", false, function(v
 
     end
 
+end)
+tab2.newToggle("Auto Trashcan", "Trashhhhhhhhh", false, function(value)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local TrashFolder = workspace:WaitForChild("Map"):WaitForChild("Trash")
+
+getgenv().FreezeTrashTP = value
+
+-- GUI
+if value then
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "FreezeFocusGui"
+gui.Parent = game.CoreGui
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,140,0,70)
+frame.Position = UDim2.new(0,20,0.5,0)
+frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.Active = true
+frame.Draggable = true
+
+Instance.new("UICorner",frame).CornerRadius = UDim.new(0,10)
+
+local playerLabel = Instance.new("TextLabel",frame)
+playerLabel.Size = UDim2.new(1,0,0,30)
+playerLabel.BackgroundTransparency = 1
+playerLabel.TextColor3 = Color3.new(1,1,1)
+playerLabel.TextScaled = true
+playerLabel.Text = "Player: none"
+
+local nextBtn = Instance.new("TextButton",frame)
+nextBtn.Size = UDim2.new(1,-10,0,30)
+nextBtn.Position = UDim2.new(0,5,0,35)
+nextBtn.Text = "NEXT"
+nextBtn.BackgroundColor3 = Color3.fromRGB(70,120,255)
+nextBtn.TextColor3 = Color3.new(1,1,1)
+
+Instance.new("UICorner",nextBtn).CornerRadius = UDim.new(0,8)
+
+-- DATA
+local FreezeState = false
+local FreezeTime = 0
+local TrashTime = 0
+
+local TrashCache = {}
+local CurrentTrash
+
+local PlayerList = {}
+local PlayerIndex = 1
+local TargetPlayer = nil
+
+local function getHRP()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+-- PLAYER LIST
+local function rebuildPlayers()
+
+    PlayerList = {}
+
+    for _,p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then
+            table.insert(PlayerList,p)
+        end
+    end
+
+    if PlayerIndex > #PlayerList then
+        PlayerIndex = 1
+    end
+
+end
+
+local function updateFocus()
+
+    if #PlayerList == 0 then
+        TargetPlayer = nil
+        playerLabel.Text = "Player: none"
+        return
+    end
+
+    TargetPlayer = PlayerList[PlayerIndex]
+    playerLabel.Text = "Player: "..TargetPlayer.Name
+
+end
+
+nextBtn.MouseButton1Click:Connect(function()
+
+    PlayerIndex += 1
+    if PlayerIndex > #PlayerList then
+        PlayerIndex = 1
+    end
+
+    updateFocus()
+
+end)
+
+-- refresh player list
+task.spawn(function()
+    while getgenv().FreezeTrashTP do
+        task.wait(12)
+        rebuildPlayers()
+    end
+end)
+
+-- reset trash cache
+task.spawn(function()
+    while getgenv().FreezeTrashTP do
+        task.wait(180)
+        TrashCache = {}
+    end
+end)
+
+-- TRASH
+local function getTrashPos(trash)
+
+    if trash:IsA("Model") then
+        return trash:GetModelCFrame().Position
+    else
+        return trash.Position
+    end
+
+end
+
+local function getRandomTrash()
+
+    local list = {}
+
+    for _,v in pairs(TrashFolder:GetChildren()) do
+        if not TrashCache[v] then
+            table.insert(list,v)
+        end
+    end
+
+    if #list == 0 then
+        TrashCache = {}
+        return nil
+    end
+
+    local trash = list[math.random(1,#list)]
+    TrashCache[trash] = true
+
+    return trash
+
+end
+
+local function tpToTrash(trash)
+
+    local hrp = getHRP()
+    local pos = getTrashPos(trash)
+
+    local offset = Vector3.new(0,0,3)
+    hrp.CFrame = CFrame.new(pos + offset, pos)
+
+end
+
+local function tpBehindPlayer()
+
+    if not TargetPlayer then return end
+    if not TargetPlayer.Character then return end
+
+    local thrp = TargetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not thrp then return end
+
+    local pos = thrp.Position - thrp.CFrame.LookVector * 5
+
+    getHRP().CFrame = CFrame.new(pos, thrp.Position)
+
+end
+
+-- START
+rebuildPlayers()
+updateFocus()
+
+CurrentTrash = getRandomTrash()
+
+if CurrentTrash then
+    task.wait(0.2)
+    tpToTrash(CurrentTrash)
+    TrashTime = tick()
+end
+
+FreezeConnection = RunService.Heartbeat:Connect(function()
+
+    if not getgenv().FreezeTrashTP then return end
+
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    local freeze = char:FindFirstChild("Freeze")
+
+    if freeze and not FreezeState then
+        FreezeState = true
+        FreezeTime = tick()
+    end
+
+    if freeze and FreezeState then
+        if tick() - FreezeTime >= 1 then
+            tpBehindPlayer()
+        end
+    end
+
+    if not freeze and FreezeState then
+        FreezeState = false
+    end
+
+    if TargetPlayer and TargetPlayer.Character then
+        local hum = TargetPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum and hum.Health <= 0 then
+            PlayerIndex += 1
+            updateFocus()
+        end
+    end
+
+    if not freeze then
+        if tick() - TrashTime >= 2 then
+
+            CurrentTrash = getRandomTrash()
+
+            if CurrentTrash then
+                tpToTrash(CurrentTrash)
+                TrashTime = tick()
+            end
+
+        end
+    end
+
+end)
+
+else
+
+getgenv().FreezeTrashTP = false
+
+if FreezeConnection then
+    FreezeConnection:Disconnect()
+    FreezeConnection = nil
+end
+
+local gui = game.CoreGui:FindFirstChild("FreezeFocusGui")
+if gui then
+    gui:Destroy()
+end
+
+end
+
+end)
+tab2.newToggle("Anti Hack", "Anti Hack Có Lẽ Vậy", false, function(value)
+
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+
+    local targetCFrame = CFrame.new(
+        795.538940, -500.083099 + 1, -147.711243,
+        0.952816, -0.298763, 0.053686,
+        -0.001011, 0.173740, 0.984791,
+        -0.303547, -0.938379, 0.165240
+    )
+
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    if value then
+        
+        -- lưu vị trí ban đầu
+        SavedVoidCFrame = hrp.CFrame
+
+        -- TP tới vị trí
+        hrp.CFrame = targetCFrame
+        hrp.Anchored = true
+
+        -- giữ vị trí
+        if VoidLockConnection then VoidLockConnection:Disconnect() end
+        VoidLockConnection = RunService.Heartbeat:Connect(function()
+            if hrp and hrp.Parent then
+                hrp.CFrame = targetCFrame
+            end
+        end)
+
+    else
+        
+        -- tắt giữ
+        if VoidLockConnection then
+            VoidLockConnection:Disconnect()
+            VoidLockConnection = nil
+        end
+
+        hrp.Anchored = false
+
+        -- quay lại vị trí ban đầu
+        if SavedVoidCFrame and hrp then
+            hrp.CFrame = SavedVoidCFrame
+        end
+
+    end
+
+end)
+local AutoCounterTPConnection
+tab2.newToggle("Anti Counter TP", "Tự động né người có Counter gần bạn", false, function(value)
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+
+    -- Hàm tìm player có Counter trong phạm vi 50 studs
+    local function findNearbyCounterPlayer()
+        local myChar = LocalPlayer.Character
+        if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return nil end
+
+        local myPos = myChar.HumanoidRootPart.Position
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = plr.Character.HumanoidRootPart
+                local accessory = plr.Character:FindFirstChild("Counter")
+                if accessory and accessory:IsA("Accessory") then
+                    local dist = (hrp.Position - myPos).Magnitude
+                    if dist <= 100 then
+                        return plr
+                    end
+                end
+            end
+        end
+        return nil
+    end
+
+    local function handleTP()
+        local counterPlayer = findNearbyCounterPlayer()
+        if counterPlayer and counterPlayer.Character and counterPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local myChar = LocalPlayer.Character
+            local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
+            local targetHRP = counterPlayer.Character.HumanoidRootPart
+
+            if myHRP then
+                local dir = (myHRP.Position - targetHRP.Position).Unit -- hướng từ họ → mình
+                local newPos = targetHRP.Position + dir * 100 -- tp cách 50 studs
+                myHRP.CFrame = CFrame.new(newPos)
+            end
+        end
+    end
+
+    if value then
+        -- bật toggle → chạy loop
+        if AutoCounterTPConnection then AutoCounterTPConnection:Disconnect() end
+        AutoCounterTPConnection = RunService.Heartbeat:Connect(function()
+            pcall(handleTP)
+        end)
+    else
+        -- tắt toggle → ngắt kết nối
+        if AutoCounterTPConnection then
+            AutoCounterTPConnection:Disconnect()
+            AutoCounterTPConnection = nil
+        end
+    end
 end)
 tab2.newToggle("Ultra Instinct", "Auto Dodge But V2", false, function(value)
 	getgenv().AutoDodging = value;
@@ -482,59 +840,6 @@ tab2.newToggle("Ultra Instinct", "Auto Dodge But V2", false, function(value)
 		end);
 	end
 end);
-tab2.newToggle("Void Edge Lock", "TP tới mép void và cố định tại đó", false, function(value)
-
-    local Players = game:GetService("Players")
-    local RunService = game:GetService("RunService")
-    local LocalPlayer = Players.LocalPlayer
-
-    local targetCFrame = CFrame.new(
-        795.538940, -500.083099 + 1, -147.711243,
-        0.952816, -0.298763, 0.053686,
-        -0.001011, 0.173740, 0.984791,
-        -0.303547, -0.938379, 0.165240
-    )
-
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-
-    if value then
-        
-        -- lưu vị trí ban đầu
-        SavedVoidCFrame = hrp.CFrame
-
-        -- TP tới vị trí
-        hrp.CFrame = targetCFrame
-        hrp.Anchored = true
-
-        -- giữ vị trí
-        if VoidLockConnection then VoidLockConnection:Disconnect() end
-        VoidLockConnection = RunService.Heartbeat:Connect(function()
-            if hrp and hrp.Parent then
-                hrp.CFrame = targetCFrame
-            end
-        end)
-
-    else
-        
-        -- tắt giữ
-        if VoidLockConnection then
-            VoidLockConnection:Disconnect()
-            VoidLockConnection = nil
-        end
-
-        hrp.Anchored = false
-
-        -- quay lại vị trí ban đầu
-        if SavedVoidCFrame and hrp then
-            hrp.CFrame = SavedVoidCFrame
-        end
-
-    end
-
-end)
 tab2.newToggle("Auto Dodge", "Ok", false, function(value)
 	getgenv().AutoDodging = value;
 	local teleportRadius = 20;
@@ -605,62 +910,7 @@ tab2.newToggle("Auto Dodge", "Ok", false, function(value)
 	end
 end);
 -- biến connection toàn cục
-local AutoCounterTPConnection
-tab2.newToggle("Anti Counter TP", "Tự động né người có Counter gần bạn", false, function(value)
-    local Players = game:GetService("Players")
-    local RunService = game:GetService("RunService")
-    local LocalPlayer = Players.LocalPlayer
 
-    -- Hàm tìm player có Counter trong phạm vi 50 studs
-    local function findNearbyCounterPlayer()
-        local myChar = LocalPlayer.Character
-        if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return nil end
-
-        local myPos = myChar.HumanoidRootPart.Position
-        for _, plr in pairs(Players:GetPlayers()) do
-            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                local hrp = plr.Character.HumanoidRootPart
-                local accessory = plr.Character:FindFirstChild("Counter")
-                if accessory and accessory:IsA("Accessory") then
-                    local dist = (hrp.Position - myPos).Magnitude
-                    if dist <= 100 then
-                        return plr
-                    end
-                end
-            end
-        end
-        return nil
-    end
-
-    local function handleTP()
-        local counterPlayer = findNearbyCounterPlayer()
-        if counterPlayer and counterPlayer.Character and counterPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local myChar = LocalPlayer.Character
-            local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
-            local targetHRP = counterPlayer.Character.HumanoidRootPart
-
-            if myHRP then
-                local dir = (myHRP.Position - targetHRP.Position).Unit -- hướng từ họ → mình
-                local newPos = targetHRP.Position + dir * 100 -- tp cách 50 studs
-                myHRP.CFrame = CFrame.new(newPos)
-            end
-        end
-    end
-
-    if value then
-        -- bật toggle → chạy loop
-        if AutoCounterTPConnection then AutoCounterTPConnection:Disconnect() end
-        AutoCounterTPConnection = RunService.Heartbeat:Connect(function()
-            pcall(handleTP)
-        end)
-    else
-        -- tắt toggle → ngắt kết nối
-        if AutoCounterTPConnection then
-            AutoCounterTPConnection:Disconnect()
-            AutoCounterTPConnection = nil
-        end
-    end
-end)
 --// Auto Block Toggle (replace toàn bộ logic cũ)
 -- đặt ở ngoài để giữ được reference
 local AutoBlockConnection
